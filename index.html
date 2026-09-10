@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Daily Planner Mobile - Sectioned Cards</title>
+
+<!-- PWA: installability -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#262521">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Planner">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+/* Desktop background & 9:16 ratio lock */
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+body { margin: 0; font-family: Inter, Segoe UI, Roboto, Arial, sans-serif; background: #d9d7d2; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; color: #262521; }
+.app { background: #f8f7f5; position: relative; display: flex; flex-direction: column; overflow: hidden; border: 1px solid #c9c7c1; width: 100vw; height: 100vh; }
+@media (min-aspect-ratio: 9/16) { .app { height: 100vh; width: calc(100vh * 9 / 16); } }
+@media (max-aspect-ratio: 9/16) { .app { width: 100vw; height: calc(100vw * 16 / 9); } }
+* { box-sizing: border-box; }
+button, input, select, textarea { font: inherit; }
+
+/* Main scroll area */
+main { flex: 1; overflow-y: auto; scroll-behavior: smooth; padding: 32px 24px 100px 24px; }
+
+/* Card container used to separate sections */
+.card { background: #ffffff; border-radius: 20px; padding: 20px; margin-bottom: 24px; border: 1px solid #e2e1dc; }
+
+/* Header & Global Sections */
+.top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+.eyebrow { font-size: 11px; color: #999; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; }
+.title { font-size: 26px; font-weight: 800; margin: 4px 0; letter-spacing: -0.5px; }
+.date { font-size: 13px; color: #777; font-weight: 500; }
+.btn { border: 0; border-radius: 8px; padding: 8px 16px; cursor: pointer; background: #262521; color: #fff; font-size: 13px; font-weight: 600; white-space: nowrap; }
+section { margin-bottom: 40px; }
+.section-title { display: flex; justify-content: space-between; align-items: end; margin-bottom: 16px; padding-bottom: 8px; }
+.section-title h2 { font-size: 20px; margin: 0; font-weight: 700; letter-spacing: -0.3px; }
+.section-title span { font-size: 12px; color: #888; font-weight: 500;}
+
+/* Tasks & notes/checklist feature */
+.today-grid { display: flex; flex-direction: column; }
+.task-group-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.task-group-head h3 { margin: 0; font-size: 15px; font-weight: 700; color: #262521; letter-spacing: 0px; }
+.progress-mini { font-size: 11px; color: #999; font-weight: 600; text-align: right; }
+.bar { height: 4px; background: #f0f0f0; border-radius: 4px; overflow: hidden; margin-top: 6px; }
+.bar i { display: block; height: 100%; background: #262521; transition: .3s ease; }
+.tasks { display: flex; flex-direction: column; }
+
+/* Clickable task row for editing (plain style inside the card) */
+.task { display: grid; grid-template-columns: 20px 1fr auto; gap: 12px; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid #f2f2f2; cursor: pointer; transition: opacity 0.2s; }
+.task:hover { opacity: 0.7; }
+.task:last-child { border-bottom: none; padding-bottom: 4px; }
+
+/* Checkbox */
+.check { width: 18px; height: 18px; border: 1.5px solid #ccc; border-radius: 50%; cursor: pointer; position: relative; margin-top: 1px; }
+.task.completed .check { background: #262521; border-color: #262521; }
+.task.completed .check:after { content: "✓"; color: white; position: absolute; font-size: 11px; left: 3.5px; top: 1px; font-weight: bold; }
+.task.completed .task-title { text-decoration: line-through; color: #aaa; }
+.task.completed .task-time { color: #d0d0d0; }
+
+/* Title & priority dot */
+.task-title-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 1px; }
+.task-title { font-size: 14px; font-weight: 500; line-height: 1.4; color: #262521; }
+.pri-box { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.pri-box.high { background: #e0483c; } /* Red */
+.pri-box.medium { background: #eaa927; } /* Yellow/Amber */
+.pri-box.low { background: #3f9d5c; } /* Green */
+
+/* Task time */
+.task-time { font-size: 12px; font-weight: 500; color: #999; padding-top: 2px; }
+
+/* Sub-tasks / checklist styling (plain) */
+.task-notes { font-size: 12px; color: #666; margin-top: 3px; padding-left: 12px; line-height: 1.5; border-left: 2px solid #eee; }
+.task-checklist { margin-top: 6px; display: flex; flex-direction: column; gap: 8px; }
+.subtask { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
+.sub-check { width: 14px; height: 14px; border: 1px solid #ccc; border-radius: 4px; position: relative; flex-shrink: 0; margin-top: 2px; }
+.subtask.done .sub-check { background: #888; border-color: #888; }
+.subtask.done .sub-check:after { content: "✓"; color: white; position: absolute; font-size: 9px; left: 2px; top: 1px; font-weight: bold; }
+.subtask.done .sub-text { text-decoration: line-through; color: #aaa; }
+.sub-text { font-size: 12px; color: #555; line-height: 1.4; }
+
+/* Overall Progress Card */
+.overall.card { display: flex; align-items: center; gap: 20px; padding: 24px 20px; }
+.overall-copy { flex: 1; }
+.overall-copy strong { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; color: #555; margin-bottom: 8px; letter-spacing: 0.5px; }
+.overall-value { font-size: 32px; font-weight: 800; letter-spacing: -1px; color: #262521; }
+
+/* Calendar Headers & Nav */
+.calendar-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+.calendar-nav { display: flex; gap: 6px; }
+.calendar-nav button { border: 1px solid #e2e1dc; background: #fff; border-radius: 6px; padding: 6px 12px; cursor: pointer; color: #262521; font-weight: bold; }
+.tabs { display: flex; background: #262521; padding: 4px; border-radius: 10px; }
+.tabs button { flex: 1; border: 0; background: transparent; padding: 10px 12px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.55); cursor: pointer; border-radius: 8px; transition: 0.2s; text-align: center; }
+.tabs button.active { background: #fff; color: #262521; }
+
+/* Month view (simplified, inside a card) */
+.month { display: grid; grid-template-columns: repeat(7, 1fr); grid-template-rows: auto repeat(6, 72px); gap: 1px; background: #ececea; border: 1px solid #ececea; border-radius: 12px; overflow: hidden; }
+.month-label { text-align: center; font-size: 10px; color: #fff; padding: 6px 0; background: #262521; font-weight: 700; }
+.month-cell { background: #fff; height: 72px; padding: 6px 4px; overflow: hidden; cursor: pointer; }
+.month-cell.has-task { background: #f5f4f1; }
+.month-cell.muted { color: #ccc; background: #fbfbfa; }
+.month-cell.muted.has-task { background: #f7f7f5; }
+.month-cell.today .month-num { background: #262521; color: #fff; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 4px; }
+.month-num { font-size: 11px; font-weight: 600; margin-bottom: 4px; text-align: center; color: #333;}
+.month-cell .mini-task { margin-bottom: 2px; font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #555; line-height: 1.2; }
+.month-cell .mini-task::before { content: "•"; margin-right: 3px; color: #ccc; }
+
+/* Vertical weekly view (plain layout inside a card) */
+.week-vertical { display: flex; flex-direction: column; }
+.day-row { display: flex; padding: 16px 0; gap: 16px; align-items: flex-start; border-bottom: 1px solid #f2f2f2; }
+.day-row:last-child { border-bottom: none; padding-bottom: 0; }
+.day-row:first-child { padding-top: 0; }
+.day-row.today .day-num { color: #262521; }
+.day-row.today .day-name { color: #262521; font-weight: 700; }
+.day-row-date { display: flex; flex-direction: column; align-items: center; width: 44px; flex-shrink: 0; cursor: pointer; }
+.day-row-date .day-name { font-size: 11px; color: #999; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+.day-row-date .day-num { font-size: 24px; font-weight: 800; margin-top: 2px; color: #aaa; letter-spacing: -0.5px; }
+.day-row-tasks { flex: 1; display: flex; flex-direction: column; gap: 6px; padding-top: 4px; }
+.mini-task-list { font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; color: #333; line-height: 1.4; padding: 2px 0; }
+.mini-task-list span { flex: 1; font-weight: 500; }
+.mini-task-list.done span { text-decoration: line-through; color: #aaa; }
+/* Simple dot indicator in the weekly view */
+.mini-task-list.work::before { content: "•"; color: #aaa; margin-right: 8px; font-size: 18px; line-height: 0; }
+.mini-task-list.personal::before { content: "•"; color: #e0e0e0; margin-right: 8px; font-size: 18px; line-height: 0; }
+
+/* Small plus button in the weekly view (minimal) */
+.add-mini-plus { background: transparent; color: #999; border: none; font-size: 18px; font-weight: 400; cursor: pointer; display: flex; align-items: center; justify-content: center; align-self: flex-start; margin-top: 4px; padding: 0 8px 0 0; transition: color 0.2s; }
+.add-mini-plus:hover { color: #262521; }
+
+/* Upcoming list redesign (plain rows inside a card) */
+.upcoming-item-new { display: flex; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid #f2f2f2; cursor: pointer; transition: opacity 0.2s; }
+.upcoming-item-new:hover { opacity: 0.7; }
+.upcoming-item-new:last-child { border-bottom: none; padding-bottom: 0; }
+.upcoming-item-new:first-child { padding-top: 0; }
+.upcoming-date-box { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 44px; background: #f8f9fa; border-radius: 10px; padding: 8px 0; }
+.up-date { font-size: 18px; font-weight: 800; color: #262521; line-height: 1; letter-spacing: -0.5px; }
+.up-month { font-size: 10px; font-weight: 700; color: #777; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.upcoming-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.upcoming-type-text { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #999; letter-spacing: 0.5px; }
+
+/* Bottom navigation (minimal, with a blurred background) */
+.bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border-top: 1px solid #eaeaea; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px 24px 20px; z-index: 10; }
+.nav-links { flex: 1; display: flex; justify-content: space-around; }
+.nav-links button { flex: 1; background: transparent; border: 0; padding: 8px; color: #aaa; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.nav-links button.active { color: #262521; font-weight: 700; }
+.nav-add { flex-shrink: 0; width: 46px; height: 46px; border-radius: 50%; background: #262521; color: #fff; border: 2px solid #262521; font-size: 24px; font-weight: 400; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.15s ease, opacity 0.15s ease; }
+.nav-add:hover { opacity: 0.9; }
+.nav-add:active { transform: scale(0.94); }
+
+/* Custom modal & checklist input builder */
+.modal { position: absolute; inset: 0; background: rgba(0,0,0,.4); backdrop-filter: blur(2px); display: none; align-items: flex-end; padding: 0; z-index: 50; }
+.modal.show { display: flex; animation: slideUp 0.3s ease-out; }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-box { background: #fff; width: 100%; border-radius: 24px 24px 0 0; padding: 32px 24px; max-height: 90vh; overflow-y: auto; }
+.modal-box h2 { margin: 0 0 24px; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+.field { margin-bottom: 20px; }
+.field label { display: block; font-size: 11px; color: #888; margin-bottom: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;}
+.field input, .field select, .field textarea { width: 100%; padding: 12px 0; border: none; border-bottom: 1px solid #ddd; background: transparent; outline: none; font-size: 15px; font-weight: 500; border-radius: 0; }
+.field input:focus, .field select:focus, .field textarea:focus { border-bottom-color: #262521; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 32px; }
+.modal-actions .btn { border-radius: 10px; padding: 12px 24px; }
+.modal-actions .btn.secondary { background: #f0f0f0; color: #333; }
+
+/* Sublist Input Box */
+.sub-input-row { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid #ddd; align-items: center; }
+.sub-input-row input { border: none; padding: 12px 0; flex: 1; font-size: 14px; }
+.sub-input-row button { background: none; border: none; font-weight: 300; font-size: 24px; color: #262521; cursor: pointer; padding: 0 8px; }
+.sublist-render { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+.sub-item-edit { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 500; color: #333; padding: 6px 0; background: #f9f9f9; border-radius: 8px; padding: 8px 12px;}
+.sub-item-edit button { background: none; border: none; color: #999; font-size: 16px; cursor: pointer; padding: 0;}
+.empty { font-size: 13px; color: #aaa; padding: 12px 0; font-style: italic; text-align: center;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <main id="scrollArea">
+    <header class="top">
+      <div>
+        <div class="eyebrow">Your Day, Organized</div>
+        <div class="title">Good morning.</div>
+        <div class="date" id="currentDate"></div>
+      </div>
+      <button class="btn" id="installBtn" style="display:none;" onclick="installApp()">Install app</button>
+    </header>
+
+    <section id="pageToday">
+      <div class="section-title"><h2>Today</h2><span id="todayLabel"></span></div>
+      
+      <div class="today-grid">
+        <!-- Work section inside a card -->
+        <div class="card">
+          <div class="task-group-head">
+            <h3>Work</h3>
+            <div style="width:100px">
+              <div class="progress-mini" id="workProgress"></div>
+              <div class="bar"><i id="workBar"></i></div>
+            </div>
+          </div>
+          <div class="tasks" id="workTasks"></div>
+        </div>
+
+        <!-- Personal section inside a card -->
+        <div class="card">
+          <div class="task-group-head">
+            <h3>Personal</h3>
+            <div style="width:100px">
+              <div class="progress-mini" id="personalProgress"></div>
+              <div class="bar"><i id="personalBar"></i></div>
+            </div>
+          </div>
+          <div class="tasks" id="personalTasks"></div>
+        </div>
+      </div>
+      
+      <!-- Overall progress inside a card -->
+      <div class="card overall">
+        <div class="overall-copy"><strong>Overall Progress</strong><div class="bar"><i id="overallBar"></i></div></div>
+        <div class="overall-value" id="overallValue">0%</div>
+      </div>
+    </section>
+
+    <section id="pageCalendar">
+      <div class="section-title">
+        <h2 id="calendarTitle">Calendar</h2>
+        <div class="calendar-nav"><button onclick="moveCalendar(-1)">‹</button><button onclick="moveCalendar(1)">›</button></div>
+      </div>
+      
+      <div style="margin-bottom: 16px;">
+         <div class="tabs"><button class="active" id="weekTab" onclick="setView('week')">Weekly</button><button id="monthTab" onclick="setView('month')">Monthly</button></div>
+      </div>
+
+      <!-- Calendar content inside a card -->
+      <div class="card" style="padding: 0; overflow: hidden;" id="calendarWrap">
+        <!-- padding removed so the month grid reaches the card's edges; controlled via JS -->
+        <div id="calendarContent"></div>
+      </div>
+    </section>
+
+    <section id="pageUpcoming">
+      <div class="section-title"><h2>Upcoming</h2><span>Future tasks</span></div>
+      <!-- Upcoming list inside a card -->
+      <div class="card upcoming" id="upcomingList"></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <div class="nav-links">
+      <button class="active" onclick="showPage('today', this)">Today</button>
+      <button onclick="showPage('calendar', this)">Calendar</button>
+      <button onclick="showPage('upcoming', this)">Upcoming</button>
+    </div>
+    <button class="nav-add" onclick="openModal()" aria-label="Add task">+</button>
+  </nav>
+
+  <div class="modal" id="modal">
+    <div class="modal-box">
+      <h2 id="modalTitle">Task Details</h2>
+      <div class="field"><label>Task Name</label><input id="taskTitle" placeholder="What needs to be done?"></div>
+      <div class="form-grid">
+        <div class="field"><label>Category</label><select id="taskType"><option value="work">Work</option><option value="personal">Personal</option></select></div>
+        <div class="field"><label>Priority</label><select id="taskPriority"><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select></div>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label>Date</label><input id="taskDate" type="date"></div>
+        <div class="field"><label>Time</label><input id="taskTime" type="time"></div>
+      </div>
+      
+      <div class="field">
+        <label>Extra Details</label>
+        <select id="noteType" onchange="toggleNoteUI()">
+          <option value="none">None</option>
+          <option value="text">Descriptive Note</option>
+          <option value="list">Checklist</option>
+        </select>
+      </div>
+      
+      <div class="field" id="wrapTextNote" style="display:none;">
+        <textarea id="taskNoteText" rows="3" placeholder="Add notes here..."></textarea>
+      </div>
+      
+      <div class="field" id="wrapListNote" style="display:none;">
+        <div class="sub-input-row">
+          <input type="text" id="subInput" placeholder="Add a sub-task...">
+          <button type="button" onclick="addSubItem()">+</button>
+        </div>
+        <div class="sublist-render" id="sublistContainer"></div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn" onclick="saveTask()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="dayModal">
+    <div class="modal-box">
+      <h2 id="dayModalTitle">Day</h2>
+      <div class="tasks" id="dayModalTasks"></div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeDayModal()">Close</button>
+        <button class="btn" onclick="addTaskForDay()">+ Add task</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Data is kept in memory for this session (browser storage APIs aren't available here).
+let tasks = null;
+let editId=null, view='week', calendarDate=new Date();
+let tempChecklist = []; 
+let dayModalDate = null;
+
+function pad(n){return String(n).padStart(2,'0')}
+function iso(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
+function dateFrom(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
+function today(){return iso(new Date())}
+function fmtDate(s,opt={day:'numeric',month:'short',year:'numeric'}){return dateFrom(s).toLocaleDateString('en-US',opt)}
+function save(){ /* in-memory only for this session */ }
+function sunday(d){let x=new Date(d);let day=x.getDay();x.setDate(x.getDate()-day);x.setHours(0,0,0,0);return x}
+function addDays(d,n){let x=new Date(d);x.setDate(x.getDate()+n);return x}
+
+function seed(){
+ if(tasks) return;
+ let t=today(), d=dateFrom(t);
+ tasks=[
+ {id:1,title:'Client presentation',type:'work',priority:'high',date:t,time:'09:00',completed:false, noteType:'text', noteText:'Ensure to highlight the Q3 growth metrics.'},
+ {id:2,title:'Buy groceries',type:'personal',priority:'medium',date:t,time:'18:00',completed:false, noteType:'list', checklist:[{id:101,text:'Milk & Eggs',done:false},{id:102,text:'Coffee Beans',done:true},{id:103,text:'Chicken breast',done:false}]},
+ {id:3,title:'Reply emails',type:'work',priority:'low',date:t,time:'15:30',completed:true, noteType:'none'},
+ {id:4,title:'Project proposal',type:'work',priority:'high',date:iso(addDays(d,3)),time:'14:00',completed:false, noteType:'none'},
+ {id:5,title:'Weekend trip prep',type:'personal',priority:'medium',date:iso(addDays(d,5)),time:'10:00',completed:false, noteType:'none'}
+ ];save()
+}
+
+function showPage(page,btn){
+ let targetSection = document.getElementById('page' + page[0].toUpperCase() + page.slice(1));
+ if (targetSection) targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+ document.querySelectorAll('.nav-links button').forEach(b=>b.classList.remove('active')); 
+ if(btn) btn.classList.add('active');
+}
+
+function toggleSubTask(taskId, subId, e){
+  if(e) e.stopPropagation();
+  let t = tasks.find(x => x.id === taskId);
+  if(t && t.checklist){
+    let sub = t.checklist.find(x => x.id === subId);
+    if(sub) { sub.done = !sub.done; save(); renderAll(); refreshDayModal(); }
+  }
+}
+
+function toggleTask(id, e){
+  if(e) e.stopPropagation();
+  let t=tasks.find(x=>x.id===id);
+  if(t){t.completed=!t.completed;save();renderAll();refreshDayModal()}
+}
+
+function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+
+function taskHTML(t){
+ let notesHtml = '';
+ if (t.noteType === 'text' && t.noteText) {
+   notesHtml = `<div class="task-notes">${esc(t.noteText).replace(/\n/g, '<br>')}</div>`;
+ } else if (t.noteType === 'list' && t.checklist && t.checklist.length > 0) {
+   notesHtml = `<div class="task-checklist">` + 
+     t.checklist.map(c => `
+       <div class="subtask ${c.done ? 'done' : ''}" onclick="toggleSubTask(${t.id}, ${c.id}, event)">
+         <div class="sub-check"></div>
+         <div class="sub-text">${esc(c.text)}</div>
+       </div>`).join('') + `</div>`;
+ }
+
+ return `<div class="task ${t.completed?'completed':''}" onclick="editTask(${t.id})">
+ <div class="check" onclick="toggleTask(${t.id}, event)"></div>
+ <div style="min-width:0;">
+   <div class="task-title-wrap">
+     <div class="task-title">${esc(t.title)}</div>
+     ${t.priority ? `<div class="pri-box ${t.priority}"></div>` : ''}
+   </div>
+   ${notesHtml}
+ </div>
+ <div class="task-time">${t.time||''}</div>
+ </div>`
+}
+
+function sectionProgress(arr,label){
+ let done=arr.filter(t=>t.completed).length,total=arr.length,p=total?Math.round(done/total*100):0;
+ document.getElementById(label+'Progress').textContent=`${done}/${total}`;
+ document.getElementById(label+'Bar').style.width=p+'%'
+}
+
+function renderToday(){
+ let ts=tasks.filter(t=>t.date===today()),w=ts.filter(t=>t.type==='work'),p=ts.filter(t=>t.type==='personal');
+ document.getElementById('currentDate').textContent=fmtDate(today(),{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+ document.getElementById('todayLabel').textContent=fmtDate(today(), {day:'numeric',month:'short'});
+ document.getElementById('workTasks').innerHTML=w.length?w.map(taskHTML).join(''):'<div class="empty">No tasks yet.</div>';
+ document.getElementById('personalTasks').innerHTML=p.length?p.map(taskHTML).join(''):'<div class="empty">No tasks yet.</div>';
+ sectionProgress(w,'work');sectionProgress(p,'personal');
+ let done=ts.filter(t=>t.completed).length,pct=ts.length?Math.round(done/ts.length*100):0;
+ document.getElementById('overallBar').style.width=pct+'%';document.getElementById('overallValue').textContent=pct+'%';
+}
+
+function renderWeek(){
+ let start=sunday(calendarDate),days=[...Array(7)].map((_,i)=>addDays(start,i));
+ document.getElementById('calendarTitle').textContent=`${fmtDate(iso(days[0]),{day:'numeric',month:'short'})} - ${fmtDate(iso(days[6]),{day:'numeric',month:'short'})}`;
+ document.getElementById('calendarWrap').style.padding = '20px';
+ 
+ document.getElementById('calendarContent').innerHTML='<div class="week-vertical">'+days.map((d)=>{
+   let s=iso(d),ts=tasks.filter(t=>t.date===s);
+   return `<div class="day-row ${s===today()?'today':''}">
+     <div class="day-row-date" onclick="openDayModal('${s}')">
+       <div class="day-name">${d.toLocaleDateString('en-US',{weekday:'short'})}</div>
+       <div class="day-num">${d.getDate()}</div>
+     </div>
+     <div class="day-row-tasks">
+       ${ts.map(t=>`<div class="mini-task-list ${t.type} ${t.completed?'done':''}" onclick="editTask(${t.id})"><span>${esc(t.title)}</span></div>`).join('')}
+       <button class="add-mini-plus" onclick="openModal('${s}')">+</button>
+     </div>
+   </div>`
+ }).join('')+'</div>';
+}
+
+function renderMonth(){
+ let y=calendarDate.getFullYear(),m=calendarDate.getMonth(),first=new Date(y,m,1),start=sunday(first),cells=[...Array(42)].map((_,i)=>addDays(start,i));
+ document.getElementById('calendarTitle').textContent=calendarDate.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+ document.getElementById('calendarWrap').style.padding = '0'; // edge-to-edge inside the card, controlled here
+
+ let labels=['S','M','T','W','T','F','S'].map(x=>`<div class="month-label">${x}</div>`).join('');
+ document.getElementById('calendarContent').innerHTML='<div class="month">'+labels+cells.map(d=>{
+   let s=iso(d),ts=tasks.filter(t=>t.date===s);
+   let cls=['month-cell'];
+   if(d.getMonth()!==m) cls.push('muted');
+   if(s===today()) cls.push('today');
+   if(ts.length) cls.push('has-task');
+   return `<div class="${cls.join(' ')}" onclick="openDayModal('${s}')"><div class="month-num">${d.getDate()}</div>${ts.slice(0,3).map(t=>`<div class="mini-task" onclick="event.stopPropagation();editTask(${t.id})">${esc(t.title)}</div>`).join('')}</div>`
+ }).join('')+'</div>';
+}
+
+function renderCalendar(){view==='week'?renderWeek():renderMonth()}
+
+function renderUpcoming(){
+ let end=iso(addDays(sunday(new Date()),6)),arr=tasks.filter(t=>t.date>end).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+ document.getElementById('upcomingList').innerHTML=arr.length?arr.map(t=>`
+   <div class="upcoming-item-new" onclick="editTask(${t.id})">
+     <div class="upcoming-date-box">
+       <div class="up-date">${dateFrom(t.date).getDate()}</div>
+       <div class="up-month">${dateFrom(t.date).toLocaleDateString('en-US',{month:'short'})}</div>
+     </div>
+     <div class="upcoming-info">
+       <div class="task-title-wrap">
+         <div class="task-title" style="font-size: 15px;">${esc(t.title)}</div>
+         ${t.priority ? `<div class="pri-box ${t.priority}"></div>` : ''}
+       </div>
+       <div class="upcoming-type-text">${t.type}</div>
+     </div>
+     <div class="task-time">${t.time||''}</div>
+   </div>`).join(''):'<div class="empty" style="padding-top:0">No upcoming tasks.</div>';
+}
+
+function renderAll(){renderToday();renderCalendar();renderUpcoming()}
+
+function toggleNoteUI(){
+  let type = document.getElementById('noteType').value;
+  document.getElementById('wrapTextNote').style.display = type === 'text' ? 'block' : 'none';
+  document.getElementById('wrapListNote').style.display = type === 'list' ? 'block' : 'none';
+}
+
+function addSubItem(){
+  let input = document.getElementById('subInput');
+  if(input.value.trim()){
+    tempChecklist.push({id: Date.now(), text: input.value.trim(), done: false});
+    input.value = '';
+    renderTempChecklist();
+  }
+}
+
+function removeSubItem(id){
+  tempChecklist = tempChecklist.filter(x => x.id !== id);
+  renderTempChecklist();
+}
+
+function renderTempChecklist(){
+  document.getElementById('sublistContainer').innerHTML = tempChecklist.map(c => 
+    `<div class="sub-item-edit">
+      <span>${esc(c.text)}</span>
+      <button onclick="removeSubItem(${c.id})">✕</button>
+    </div>`
+  ).join('');
+}
+
+function openModal(date=today()){
+ editId=null;
+ document.getElementById('modalTitle').textContent='Add task';
+ document.getElementById('taskTitle').value='';
+ document.getElementById('taskDate').value=date;
+ document.getElementById('taskTime').value='';
+ document.getElementById('noteType').value='none';
+ document.getElementById('taskNoteText').value='';
+ tempChecklist = [];
+ renderTempChecklist();
+ toggleNoteUI();
+ document.getElementById('modal').classList.add('show');
+}
+
+function editTask(id){
+ closeDayModal();
+ let t=tasks.find(x=>x.id===id);if(!t)return;editId=id;
+ document.getElementById('modalTitle').textContent='Edit task';
+ document.getElementById('taskTitle').value=t.title;
+ document.getElementById('taskType').value=t.type;
+ document.getElementById('taskPriority').value=t.priority;
+ document.getElementById('taskDate').value=t.date;
+ document.getElementById('taskTime').value=t.time||'';
+ 
+ document.getElementById('noteType').value=t.noteType || 'none';
+ document.getElementById('taskNoteText').value=t.noteText || '';
+ tempChecklist = t.checklist ? JSON.parse(JSON.stringify(t.checklist)) : [];
+ 
+ renderTempChecklist();
+ toggleNoteUI();
+ document.getElementById('modal').classList.add('show');
+}
+
+function closeModal(){document.getElementById('modal').classList.remove('show')}
+
+function renderDayModalTasks(){
+ let ts = tasks.filter(t=>t.date===dayModalDate).sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+ document.getElementById('dayModalTasks').innerHTML = ts.length ? ts.map(taskHTML).join('') : '<div class="empty">No tasks for this day yet.</div>';
+}
+
+function openDayModal(dateStr){
+ dayModalDate = dateStr;
+ document.getElementById('dayModalTitle').textContent = dateFrom(dateStr).toLocaleDateString('en-US',{weekday:'long', day:'numeric', month:'long', year:'numeric'});
+ renderDayModalTasks();
+ document.getElementById('dayModal').classList.add('show');
+}
+
+function closeDayModal(){
+ document.getElementById('dayModal').classList.remove('show');
+ dayModalDate = null;
+}
+
+function refreshDayModal(){
+ if(dayModalDate && document.getElementById('dayModal').classList.contains('show')) renderDayModalTasks();
+}
+
+function addTaskForDay(){
+ let d = dayModalDate;
+ closeDayModal();
+ openModal(d);
+}
+
+function saveTask(){
+ let title=document.getElementById('taskTitle').value.trim();if(!title)return;
+ let noteType = document.getElementById('noteType').value;
+ 
+ let data={
+   title,
+   type:document.getElementById('taskType').value,
+   priority:document.getElementById('taskPriority').value,
+   date:document.getElementById('taskDate').value,
+   time:document.getElementById('taskTime').value,
+   noteType: noteType,
+   noteText: noteType === 'text' ? document.getElementById('taskNoteText').value : '',
+   checklist: noteType === 'list' ? tempChecklist : []
+ };
+ 
+ if(editId){Object.assign(tasks.find(t=>t.id===editId),data)}else tasks.push({id:Date.now(),completed:false,...data});
+ save();closeModal();renderAll()
+}
+
+function setView(v){view=v;document.getElementById('weekTab').classList.toggle('active',v==='week');document.getElementById('monthTab').classList.toggle('active',v==='month');renderCalendar()}
+function moveCalendar(n){if(view==='week')calendarDate=addDays(calendarDate,n*7);else calendarDate=new Date(calendarDate.getFullYear(),calendarDate.getMonth()+n,1);renderCalendar()}
+
+document.getElementById('modal').addEventListener('mousedown',e=>{if(e.target.id==='modal')closeModal()});
+document.getElementById('dayModal').addEventListener('mousedown',e=>{if(e.target.id==='dayModal')closeDayModal()});
+document.getElementById('subInput').addEventListener('keydown', e=>{if(e.key === 'Enter') { e.preventDefault(); addSubItem(); }});
+
+// --- PWA: installability ---
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const btn = document.getElementById('installBtn');
+  if (btn) btn.style.display = 'inline-block';
+});
+
+function installApp(){
+  const btn = document.getElementById('installBtn');
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.finally(() => {
+    deferredInstallPrompt = null;
+    if (btn) btn.style.display = 'none';
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  const btn = document.getElementById('installBtn');
+  if (btn) btn.style.display = 'none';
+});
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch((err) => {
+      console.warn('Service worker registration failed:', err);
+    });
+  });
+}
+
+seed();renderAll();
+
+const mainScroll = document.getElementById('scrollArea');
+mainScroll.addEventListener('scroll', () => {
+  const sections = ['pageToday', 'pageCalendar', 'pageUpcoming'];
+  const buttons = document.querySelectorAll('.nav-links button');
+  let currentActive = 0;
+  sections.forEach((id, index) => {
+    const el = document.getElementById(id);
+    if(el.getBoundingClientRect().top < window.innerHeight / 2) currentActive = index;
+  });
+  buttons.forEach(b => b.classList.remove('active'));
+  buttons[currentActive].classList.add('active');
+});
+</script>
+</body>
+</html>
