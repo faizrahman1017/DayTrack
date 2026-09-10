@@ -312,10 +312,11 @@ section { margin-bottom: 40px; }
 </div>
 
 <script>
-// Data is kept in memory for this session (browser storage APIs aren't available here).
+// Persistent task storage: keeps tasks after refresh and browser restarts.
+const STORAGE_KEY = 'daytrack_tasks_v1';
 let tasks = null;
 let editId=null, view='week', calendarDate=new Date();
-let tempChecklist = []; 
+let tempChecklist = [];
 let dayModalDate = null;
 
 function pad(n){return String(n).padStart(2,'0')}
@@ -323,13 +324,40 @@ function iso(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDat
 function dateFrom(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
 function today(){return iso(new Date())}
 function fmtDate(s,opt={day:'numeric',month:'short',year:'numeric'}){return dateFrom(s).toLocaleDateString('en-US',opt)}
-function save(){ /* in-memory only for this session */ }
+
+function save(){
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks || []));
+  } catch (err) {
+    console.warn('Could not save tasks:', err);
+  }
+}
+
+function loadTasks(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw === null) return null;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : null;
+  } catch (err) {
+    console.warn('Could not load tasks:', err);
+    return null;
+  }
+}
+
 function sunday(d){let x=new Date(d);let day=x.getDay();x.setDate(x.getDate()-day);x.setHours(0,0,0,0);return x}
 function addDays(d,n){let x=new Date(d);x.setDate(x.getDate()+n);return x}
 
 function seed(){
- if(tasks) return;
- tasks=[];
+  if(tasks !== null) return;
+  const stored = loadTasks();
+  if(stored !== null){
+    tasks = stored;
+    return;
+  }
+  // New users start with a completely empty DayTrack.
+  tasks = [];
+  save();
 }
 function showPage(page,btn){
  let targetSection = document.getElementById('page' + page[0].toUpperCase() + page.slice(1));
