@@ -328,10 +328,9 @@ function sunday(d){let x=new Date(d);let day=x.getDay();x.setDate(x.getDate()-da
 function addDays(d,n){let x=new Date(d);x.setDate(x.getDate()+n);return x}
 
 function seed(){
-  if(tasks) return;
-  tasks=[];
+ if(tasks) return;
+ tasks=[];
 }
-
 function showPage(page,btn){
  let targetSection = document.getElementById('page' + page[0].toUpperCase() + page.slice(1));
  if (targetSection) targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
