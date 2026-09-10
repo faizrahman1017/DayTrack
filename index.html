@@ -328,15 +328,8 @@ function sunday(d){let x=new Date(d);let day=x.getDay();x.setDate(x.getDate()-da
 function addDays(d,n){let x=new Date(d);x.setDate(x.getDate()+n);return x}
 
 function seed(){
- if(tasks) return;
- let t=today(), d=dateFrom(t);
- tasks=[
- {id:1,title:'Client presentation',type:'work',priority:'high',date:t,time:'09:00',completed:false, noteType:'text', noteText:'Ensure to highlight the Q3 growth metrics.'},
- {id:2,title:'Buy groceries',type:'personal',priority:'medium',date:t,time:'18:00',completed:false, noteType:'list', checklist:[{id:101,text:'Milk & Eggs',done:false},{id:102,text:'Coffee Beans',done:true},{id:103,text:'Chicken breast',done:false}]},
- {id:3,title:'Reply emails',type:'work',priority:'low',date:t,time:'15:30',completed:true, noteType:'none'},
- {id:4,title:'Project proposal',type:'work',priority:'high',date:iso(addDays(d,3)),time:'14:00',completed:false, noteType:'none'},
- {id:5,title:'Weekend trip prep',type:'personal',priority:'medium',date:iso(addDays(d,5)),time:'10:00',completed:false, noteType:'none'}
- ];save()
+  if(tasks) return;
+  tasks=[];
 }
 
 function showPage(page,btn){
