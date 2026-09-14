@@ -1,11 +1,11 @@
 {
-  "name": "DayTrack",
-  "short_name": "DayTrack",
-  "start_url": "./",
+  "name": "Daily Planner",
+  "short_name": "Planner",
+  "description": "A simple daily planner with tasks, notes, calendar and upcoming views.",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f7f7f5",
-  "theme_color": "#f7f7f5",
-  "description": "Simple daily planner",
+  "background_color": "#f8f7f5",
+  "theme_color": "#262521",
   "icons": [
     {
       "src": "icon-192.png",

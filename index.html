@@ -105,6 +105,10 @@ button, input, select, textarea { font: inherit; }
 /* Main scroll area */
 main { flex: 1; overflow-y: auto; scroll-behavior: smooth; padding: 32px 24px 100px 24px; }
 
+/* Real tab/page switching: only the active page renders, each starts fresh at the top */
+.page { display: none; }
+.page.active { display: block; }
+
 /* Card container used to separate sections */
 .card { background: var(--bg-card); border-radius: 20px; padding: 20px; margin-bottom: 24px; border: 1px solid var(--border-card); }
 
@@ -126,12 +130,25 @@ section { margin-bottom: 40px; }
 
 /* Tasks & notes/checklist feature */
 .today-grid { display: flex; flex-direction: column; }
-.task-group-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.task-group-head h3 { margin: 0; font-size: 15px; font-weight: 700; color: var(--text-primary); letter-spacing: 0px; }
+
+/* Compact side-by-side stat pills: shows Work + Personal progress together at a glance */
+.stat-row { display: flex; gap: 10px; margin-bottom: 20px; }
+.stat-pill { flex: 1; background: var(--bg-subtle); border-radius: 14px; padding: 12px 14px; }
+.stat-pill-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.stat-pill-label { font-size: 12px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; }
+.stat-pill-label .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.stat-pill-label .dot.work { background: var(--text-primary); }
+.stat-pill-label .dot.personal { background: var(--dot-personal); border: 1px solid var(--border-input); }
+.stat-pill-count { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+
+.task-group-head { display: flex; justify-content: space-between; align-items: center; margin: 22px 0 12px; }
+.task-group-head:first-of-type { margin-top: 0; }
+.task-group-head h3 { margin: 0; font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; }
 .progress-mini { font-size: 11px; color: var(--text-muted); font-weight: 600; text-align: right; }
 .bar { height: 4px; background: var(--bg-subtle); border-radius: 4px; overflow: hidden; margin-top: 6px; }
 .bar i { display: block; height: 100%; background: var(--accent); transition: .3s ease; }
 .tasks { display: flex; flex-direction: column; }
+.task-divider { height: 1px; background: var(--border-subtle); margin: 4px 0 0; }
 
 /* Clickable task row for editing (plain style inside the card) */
 .task { display: grid; grid-template-columns: 20px 1fr auto; gap: 12px; align-items: flex-start; padding: 14px 0; border-bottom: 1px solid var(--border-subtle); cursor: pointer; transition: opacity 0.2s; }
@@ -227,9 +244,8 @@ section { margin-bottom: 40px; }
 
 /* Bottom navigation (minimal, with a blurred background) */
 .bottom-nav { position: absolute; bottom: 0; left: 0; width: 100%; background: var(--bg-bottomnav); backdrop-filter: blur(10px); border-top: 1px solid var(--border-bottomnav); display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px 24px 20px; z-index: 10; }
-.nav-links { flex: 1; display: flex; justify-content: space-around; }
-.nav-links button { flex: 1; background: transparent; border: 0; padding: 8px; color: var(--text-faint); font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-.nav-links button.active { color: var(--text-primary); font-weight: 700; }
+.nav-tab { flex: 1; background: transparent; border: 0; padding: 8px; color: var(--text-faint); font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+.nav-tab.active { color: var(--text-primary); font-weight: 700; }
 .nav-add { flex-shrink: 0; width: 46px; height: 46px; border-radius: 50%; background: var(--accent); color: var(--accent-contrast); border: 2px solid var(--accent); font-size: 24px; font-weight: 400; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.15s ease, opacity 0.15s ease; }
 .nav-add:hover { opacity: 0.9; }
 .nav-add:active { transform: scale(0.94); }
@@ -272,9 +288,127 @@ section { margin-bottom: 40px; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: auto; }
 .toast button { background: transparent; border: 0; color: #fff; font-weight: 700; font-size: 13px; cursor: pointer; text-decoration: underline; white-space: nowrap; flex-shrink: 0; }
 
-/* Backup (export/import) */
-.backup-row { display: flex; gap: 10px; }
-.backup-row button { flex: 1; }
+
+/* ── Notes ─────────────────────────────────────────────────── */
+/* Note card — title only in the list */
+.note-card { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--border-subtle); }
+.note-card:last-child { border-bottom: none; padding-bottom: 0; }
+.note-card:first-child { padding-top: 0; }
+.note-card-body { flex: 1; min-width: 0; cursor: pointer; }
+.note-card-body:hover .note-card-title { opacity: .72; }
+.note-card-title { font-size: 14px; font-weight: 600; color: var(--text-primary); line-height: 1.3; margin-bottom: 3px; }
+/* tiny timestamps */
+.note-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+.note-meta-item { font-size: 9px; color: var(--text-faint); font-weight: 400; letter-spacing: .1px; }
+.note-meta-item b { font-weight: 500; color: var(--text-faint); }
+
+/* three-dot menu button */
+.note-menu-btn { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; border: none; background: transparent; color: var(--text-muted); font-size: 18px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; transition: background .15s; }
+.note-menu-btn:hover { background: var(--bg-subtle); }
+/* dropdown */
+.note-menu-dropdown { position: absolute; right: 0; top: 32px; background: var(--bg-modal-box); border: 1px solid var(--border-card); border-radius: 12px; overflow: hidden; min-width: 130px; z-index: 80; }
+.note-menu-dropdown button { display: block; width: 100%; padding: 12px 16px; text-align: left; background: transparent; border: none; font-size: 13px; font-weight: 500; color: var(--text-primary); cursor: pointer; }
+.note-menu-dropdown button:hover { background: var(--bg-subtle); }
+.note-menu-dropdown button.danger { color: var(--danger-text); }
+.note-menu-dropdown button + button { border-top: 1px solid var(--border-subtle); }
+
+/* Note detail modal */
+.note-detail-body { font-size: 14px; color: var(--text-secondary); line-height: 1.7; white-space: pre-wrap; word-break: break-word; margin-bottom: 8px; }
+/* note checklist inside detail/edit modal */
+.note-checklist-wrap { display: flex; flex-direction: column; }
+.note-sub-row { display: flex; align-items: flex-start; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--border-subtle); }
+.note-sub-row:last-child { border-bottom: none; }
+.note-sub-check { width: 16px; height: 16px; border: 1.5px solid var(--border-input); border-radius: 4px; flex-shrink: 0; margin-top: 2px; position: relative; cursor: pointer; }
+.note-sub-row.done .note-sub-check { background: var(--accent); border-color: var(--accent); }
+.note-sub-row.done .note-sub-check:after { content:"✓"; color: var(--accent-contrast); position: absolute; font-size: 10px; left: 2px; top: 0; font-weight: bold; }
+.note-sub-row.done .note-sub-text { text-decoration: line-through; color: var(--text-faint); }
+.note-sub-text { font-size: 14px; font-weight: 500; color: var(--text-primary); line-height: 1.4; flex: 1; }
+
+/* add sub item row inside note edit modal */
+.note-add-row { display: flex; gap: 8px; align-items: center; border-bottom: 1px solid var(--border-input); margin-top: 8px; }
+.note-add-row input { border: none; padding: 10px 0; flex: 1; font-size: 14px; background: transparent; color: var(--text-primary); outline: none; }
+.note-add-row button { background: none; border: none; font-size: 22px; font-weight: 300; color: var(--text-primary); cursor: pointer; padding: 0 6px; }
+
+/* Note modal meta timestamps */
+.note-modal-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; margin-top: -10px; }
+.note-modal-meta span { font-size: 10px; color: var(--text-faint); font-weight: 400; }
+.note-modal-meta b { font-weight: 500; }
+
+/* empty notes */
+.notes-empty { text-align: center; padding: 32px 16px; }
+.notes-empty-icon { font-size: 32px; margin-bottom: 10px; }
+.notes-empty-text { font-size: 13px; color: var(--text-muted); line-height: 1.5; }
+.notes-empty-text strong { color: var(--text-primary); display: block; margin-bottom: 4px; font-size: 15px; }
+
+/* ── Notes: centered popup preview ─────────────────────────── */
+#noteDetailModal{
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+#noteDetailModal.show{
+  animation: notePopupFade .22s ease-out;
+}
+#noteDetailModal .modal-box{
+  width:min(720px, calc(100% - 8px));
+  max-height:82vh;
+  border-radius:28px;
+  padding:36px 38px 30px;
+  box-shadow:0 24px 70px rgba(0,0,0,.22);
+  animation: notePopupIn .24s cubic-bezier(.2,.8,.2,1);
+}
+#noteDetailModal #noteDetailTitle{
+  margin:0 0 12px !important;
+  font-size:26px;
+  line-height:1.15;
+  letter-spacing:-.7px;
+}
+#noteDetailModal .note-modal-meta{
+  margin:0 0 28px;
+  gap:8px 18px;
+  align-items:center;
+  line-height:1.5;
+}
+#noteDetailModal .note-meta-item{
+  font-size:11px;
+  line-height:1.5;
+}
+#noteDetailModal #noteDetailContent{
+  padding-top:2px;
+}
+#noteDetailModal .note-checklist-wrap{
+  gap:0;
+}
+#noteDetailModal .note-sub-row{
+  padding:15px 0;
+}
+#noteDetailModal .note-sub-text{
+  font-size:15px;
+  line-height:1.5;
+}
+#noteDetailModal .modal-actions{
+  margin-top:28px !important;
+  padding-top:4px;
+}
+@keyframes notePopupFade{
+  from{opacity:0}
+  to{opacity:1}
+}
+@keyframes notePopupIn{
+  from{transform:translateY(12px) scale(.975);opacity:0}
+  to{transform:translateY(0) scale(1);opacity:1}
+}
+@media (max-width:560px){
+  #noteDetailModal{padding:16px}
+  #noteDetailModal .modal-box{
+    width:100%;
+    max-height:86vh;
+    border-radius:24px;
+    padding:30px 24px 24px;
+  }
+  #noteDetailModal #noteDetailTitle{font-size:23px}
+}
+
 </style>
 </head>
 <body>
@@ -293,85 +427,77 @@ section { margin-bottom: 40px; }
       </div>
     </header>
 
-    <section id="pageToday">
-      <div class="section-title"><h2>Today</h2><span id="todayLabel"></span></div>
-      
-      <div class="today-grid">
-        <!-- Work section inside a card -->
-        <div class="card">
-          <div class="task-group-head">
-            <h3>Work</h3>
-            <div style="width:100px">
-              <div class="progress-mini" id="workProgress"></div>
+    <section id="pageDayPlan" class="page active">
+      <section id="dpToday">
+        <div class="section-title"><h2>Today</h2><span id="todayLabel"></span></div>
+
+        <!-- Work + Personal shown together in one card so the day's full load is visible at a glance -->
+        <div class="card today-grid">
+          <div class="stat-row">
+            <div class="stat-pill">
+              <div class="stat-pill-top">
+                <div class="stat-pill-label"><span class="dot work"></span>Work</div>
+                <div class="stat-pill-count" id="workProgress"></div>
+              </div>
               <div class="bar"><i id="workBar"></i></div>
             </div>
-          </div>
-          <div class="tasks" id="workTasks"></div>
-        </div>
-
-        <!-- Personal section inside a card -->
-        <div class="card">
-          <div class="task-group-head">
-            <h3>Personal</h3>
-            <div style="width:100px">
-              <div class="progress-mini" id="personalProgress"></div>
+            <div class="stat-pill">
+              <div class="stat-pill-top">
+                <div class="stat-pill-label"><span class="dot personal"></span>Personal</div>
+                <div class="stat-pill-count" id="personalProgress"></div>
+              </div>
               <div class="bar"><i id="personalBar"></i></div>
             </div>
           </div>
+
+          <div class="task-group-head"><h3>Work</h3></div>
+          <div class="tasks" id="workTasks"></div>
+
+          <div class="task-divider"></div>
+
+          <div class="task-group-head"><h3>Personal</h3></div>
           <div class="tasks" id="personalTasks"></div>
         </div>
-      </div>
-      
-      <!-- Overall progress inside a card -->
-      <div class="card overall">
-        <div class="overall-copy"><strong>Overall Progress</strong><div class="bar"><i id="overallBar"></i></div></div>
-        <div class="overall-value" id="overallValue">0%</div>
-      </div>
+      </section>
+
+      <section id="dpCalendar">
+        <div class="section-title">
+          <h2 id="calendarTitle">Calendar</h2>
+          <div class="calendar-nav"><button onclick="moveCalendar(-1)">‹</button><button onclick="moveCalendar(1)">›</button></div>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+           <div class="tabs"><button class="active" id="weekTab" onclick="setView('week')">Weekly</button><button id="monthTab" onclick="setView('month')">Monthly</button></div>
+        </div>
+
+        <!-- Calendar content inside a card -->
+        <div class="card" style="padding: 0; overflow: hidden;" id="calendarWrap">
+          <!-- padding removed so the month grid reaches the card's edges; controlled via JS -->
+          <div id="calendarContent"></div>
+        </div>
+      </section>
+
+      <section id="dpUpcoming">
+        <div class="section-title"><h2>Upcoming</h2><span>Future tasks</span></div>
+        <!-- Upcoming list inside a card -->
+        <div class="card upcoming" id="upcomingList"></div>
+      </section>
     </section>
 
-    <section id="pageCalendar">
+    <!-- ── NOTES ────────────────────────────────────────────── -->
+    <section id="pageNotes" class="page">
       <div class="section-title">
-        <h2 id="calendarTitle">Calendar</h2>
-        <div class="calendar-nav"><button onclick="moveCalendar(-1)">‹</button><button onclick="moveCalendar(1)">›</button></div>
+        <h2>Notes</h2>
+        <button class="btn" style="padding:6px 14px;font-size:12px;" onclick="openNoteModal()">+ New note</button>
       </div>
-      
-      <div style="margin-bottom: 16px;">
-         <div class="tabs"><button class="active" id="weekTab" onclick="setView('week')">Weekly</button><button id="monthTab" onclick="setView('month')">Monthly</button></div>
-      </div>
-
-      <!-- Calendar content inside a card -->
-      <div class="card" style="padding: 0; overflow: hidden;" id="calendarWrap">
-        <!-- padding removed so the month grid reaches the card's edges; controlled via JS -->
-        <div id="calendarContent"></div>
-      </div>
-    </section>
-
-    <section id="pageUpcoming">
-      <div class="section-title"><h2>Upcoming</h2><span>Future tasks</span></div>
-      <!-- Upcoming list inside a card -->
-      <div class="card upcoming" id="upcomingList"></div>
-
-      <!-- Backup: export/import tasks as a JSON file -->
-      <div class="card">
-        <div class="task-group-head">
-          <h3>Backup</h3>
-        </div>
-        <div class="backup-row">
-          <button class="btn secondary" onclick="exportData()">Export data</button>
-          <button class="btn secondary" onclick="triggerImport()">Import data</button>
-        </div>
-        <input type="file" id="importFile" accept="application/json" style="display:none;" onchange="importData(event)">
-      </div>
+      <div class="card" id="notesList"></div>
     </section>
   </main>
 
   <nav class="bottom-nav">
-    <div class="nav-links">
-      <button class="active" onclick="showPage('today', this)">Today</button>
-      <button onclick="showPage('calendar', this)">Calendar</button>
-      <button onclick="showPage('upcoming', this)">Upcoming</button>
-    </div>
+    <button class="nav-tab active" onclick="showPage('dayplan', this)">Day Plan</button>
     <button class="nav-add" onclick="openModal()" aria-label="Add task">+</button>
+    <button class="nav-tab" onclick="showPage('notes', this)">Notes</button>
   </nav>
 
   <div class="modal" id="modal">
@@ -434,6 +560,56 @@ section { margin-bottom: 40px; }
       <div class="modal-actions">
         <button class="btn secondary" onclick="closeDayModal()">Close</button>
         <button class="btn" onclick="addTaskForDay()">+ Add task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Note detail modal (read / checklist-toggle) -->
+  <div class="modal" id="noteDetailModal">
+    <div class="modal-box">
+      <h2 id="noteDetailTitle" style="margin-bottom:6px;"></h2>
+      <div class="note-modal-meta" id="noteDetailMeta"></div>
+      <div id="noteDetailContent"></div>
+      <div class="modal-actions" style="margin-top:24px;">
+        <button class="btn secondary" onclick="closeNoteDetailModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Note edit modal (create / edit) -->
+  <div class="modal" id="noteModal">
+    <div class="modal-box">
+      <h2 id="noteModalTitle">New Note</h2>
+      <div class="note-modal-meta" id="noteModalMeta" style="display:none;">
+        <span id="noteMetaCreated"></span>
+        <span id="noteMetaUpdated" style="display:none;"></span>
+      </div>
+      <div class="field">
+        <label>Title</label>
+        <input id="noteTitle" placeholder="Give this note a title…">
+      </div>
+      <div class="field">
+        <label>Content type</label>
+        <select id="noteContentType" onchange="toggleNoteContentUI()">
+          <option value="text">Descriptive</option>
+          <option value="list">Checklist</option>
+        </select>
+      </div>
+      <div class="field" id="wrapNoteText">
+        <label>Note</label>
+        <textarea id="noteBody" rows="5" placeholder="Write anything here…"></textarea>
+      </div>
+      <div class="field" id="wrapNoteList" style="display:none;">
+        <label>Checklist</label>
+        <div class="note-checklist-wrap" id="noteChecklistWrap"></div>
+        <div class="note-add-row">
+          <input type="text" id="noteSubInput" placeholder="Add item…">
+          <button type="button" onclick="addNoteSubItem()">+</button>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn secondary" onclick="closeNoteModal()">Cancel</button>
+        <button class="btn" onclick="saveNote()">Save</button>
       </div>
     </div>
   </div>
@@ -550,11 +726,15 @@ function seed(){
   save();
 }
 
+const PAGE_IDS = { dayplan: 'pageDayPlan', notes: 'pageNotes' };
+
 function showPage(page,btn){
- let targetSection = document.getElementById('page' + page[0].toUpperCase() + page.slice(1));
- if (targetSection) targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
- document.querySelectorAll('.nav-links button').forEach(b=>b.classList.remove('active')); 
+ const targetId = PAGE_IDS[page];
+ document.querySelectorAll('main > .page').forEach(sec => sec.classList.toggle('active', sec.id === targetId));
+ document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
  if(btn) btn.classList.add('active');
+ const scrollArea = document.getElementById('scrollArea');
+ if(scrollArea) scrollArea.scrollTop = 0;
 }
 
 function toggleSubTask(taskId, subId, e){
@@ -573,7 +753,7 @@ function toggleTask(id, e){
 }
 
 function esc(s){return String(s ?? '').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-function jsArg(value){return JSON.stringify(String(value));}
+function jsArg(value){ return "'" + String(value).replace(/'/g,"\'") + "'"; }
 
 function taskHTML(t){
  let notesHtml = '';
@@ -614,8 +794,6 @@ function renderToday(){
  document.getElementById('workTasks').innerHTML=w.length?w.map(taskHTML).join(''):'<div class="empty">No tasks yet — tap + to add one.</div>';
  document.getElementById('personalTasks').innerHTML=p.length?p.map(taskHTML).join(''):'<div class="empty">No tasks yet — tap + to add one.</div>';
  sectionProgress(w,'work');sectionProgress(p,'personal');
- let done=ts.filter(t=>t.completed).length,pct=ts.length?Math.round(done/ts.length*100):0;
- document.getElementById('overallBar').style.width=pct+'%';document.getElementById('overallValue').textContent=pct+'%';
 }
 
 function renderWeek(){
@@ -675,7 +853,7 @@ function renderUpcoming(){
    </div>`).join(''):'<div class="empty" style="padding-top:0">No upcoming tasks.</div>';
 }
 
-function renderAll(){renderToday();renderCalendar();renderUpcoming()}
+function renderAll(){renderToday();renderCalendar();renderUpcoming();renderNotes()}
 
 function toggleNoteUI(){
   let type = document.getElementById('noteType').value;
@@ -789,10 +967,11 @@ function deleteTask(){
  showUndoToast(t);
 }
 
-function showUndoToast(deletedTask){
+function showUndoToast(deletedItem){
  if(lastDeleted && lastDeleted.timeoutId) clearTimeout(lastDeleted.timeoutId);
- lastDeleted = { task: deletedTask };
- document.getElementById('toastMsg').textContent = `Deleted "${deletedTask.title}"`;
+ lastDeleted = { task: deletedItem };
+ const label = deletedItem.title || 'Item';
+ document.getElementById('toastMsg').textContent = `Deleted "${label}"`;
  document.getElementById('toast').classList.add('show');
  lastDeleted.timeoutId = setTimeout(()=>{
    document.getElementById('toast').classList.remove('show');
@@ -803,10 +982,14 @@ function showUndoToast(deletedTask){
 function undoDelete(){
  if(!lastDeleted) return;
  clearTimeout(lastDeleted.timeoutId);
- tasks.push(lastDeleted.task);
- save();
- renderAll();
- refreshDayModal();
+ if(typeof lastDeleted._undoFn === 'function'){
+   lastDeleted._undoFn();
+ } else {
+   tasks.push(lastDeleted.task);
+   save();
+   renderAll();
+   refreshDayModal();
+ }
  document.getElementById('toast').classList.remove('show');
  lastDeleted = null;
 }
@@ -868,49 +1051,266 @@ function saveTask(){
 function setView(v){view=v;document.getElementById('weekTab').classList.toggle('active',v==='week');document.getElementById('monthTab').classList.toggle('active',v==='month');renderCalendar()}
 function moveCalendar(n){if(view==='week')calendarDate=addDays(calendarDate,n*7);else calendarDate=new Date(calendarDate.getFullYear(),calendarDate.getMonth()+n,1);renderCalendar()}
 
-function exportData(){
- const payload = { format: 'daytrack-backup', version: DATA_VERSION, exportedAt: new Date().toISOString(), tasks };
- const blob = new Blob([JSON.stringify(payload, null, 2)], {type: 'application/json'});
- const url = URL.createObjectURL(blob);
- const a = document.createElement('a');
- a.href = url;
- a.download = `daily-planner-backup-${today()}.json`;
- document.body.appendChild(a);
- a.click();
- document.body.removeChild(a);
- URL.revokeObjectURL(url);
+// ── NOTES ────────────────────────────────────────────────────
+const NOTES_KEY = 'daytrackNotes_v1';
+
+function loadNotes(){
+  try {
+    const raw = safeGet(NOTES_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      if(Array.isArray(parsed)) return parsed;
+    }
+  } catch(e){ console.warn('Could not load notes.', e); }
+  return [];
 }
 
-function triggerImport(){
- document.getElementById('importFile').click();
+let notes = loadNotes();
+let editNoteId = null;
+let tempNoteChecklist = [];
+
+function saveNotes(){
+  safeSet(NOTES_KEY, JSON.stringify(notes));
 }
 
-function importData(event){
- const file=event.target.files[0];
- if(!file) return;
- const reader=new FileReader();
- reader.onload=(e)=>{
-   try{
-     const parsed=JSON.parse(e.target.result);
-     const source=Array.isArray(parsed) ? parsed : parsed && parsed.tasks;
-     if(!Array.isArray(source)) throw new Error('Invalid file format');
-     const importedTasks=source.map(normalizeTask);
-     if(importedTasks.some(t=>!t)) throw new Error('Invalid task data');
-     if(!confirm(`Import ${importedTasks.length} task(s)? This will replace all tasks currently on this device.`)) return;
-     tasks=importedTasks;
-     save();
-     renderAll();
-   }catch(err){
-     alert("Couldn't read this file. Please choose a valid backup file exported from this app.");
-   }
- };
- reader.readAsText(file);
- event.target.value='';
+function fmtTimestamp(iso){
+  if(!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+    + ' · ' + d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+}
+
+// ── Note card: title + timestamps + three-dot menu ──────────
+function noteCardHTML(n){
+  const wasEdited = n.updatedAt && n.updatedAt !== n.createdAt;
+  const metaCreated = `<span class="note-meta-item"><b>Created</b> ${fmtTimestamp(n.createdAt)}</span>`;
+  const metaEdited  = wasEdited ? `<span class="note-meta-item"><b>Edited</b> ${fmtTimestamp(n.updatedAt)}</span>` : '';
+
+  return `<div class="note-card">
+    <div class="note-card-body" onclick="openNoteDetail(${jsArg(n.id)})">
+      <div class="note-card-title">${esc(n.title || 'Untitled')}</div>
+      <div class="note-meta">${metaCreated}${metaEdited}</div>
+    </div>
+    <div style="position:relative;">
+      <button class="note-menu-btn" onclick="toggleNoteMenu(event,${jsArg(n.id)})" aria-label="Note options">···</button>
+      <div class="note-menu-dropdown" id="noteMenu_${esc(n.id)}" style="display:none;">
+        <button onclick="closeNoteMenus();openNoteModal(${jsArg(n.id)})">Edit</button>
+        <button class="danger" onclick="closeNoteMenus();confirmDeleteNote(${jsArg(n.id)})">Delete</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderNotes(){
+  const el = document.getElementById('notesList');
+  if(!el) return;
+  const sorted = notes.slice().sort((a,b) => (b.updatedAt||b.createdAt||'').localeCompare(a.updatedAt||a.createdAt||''));
+  el.innerHTML = sorted.length ? sorted.map(noteCardHTML).join('') :
+    `<div class="notes-empty">
+      <div class="notes-empty-icon">📋</div>
+      <div class="notes-empty-text"><strong>No notes yet</strong>Tap "New note" to create your first note — it stays until you delete it.</div>
+    </div>`;
+}
+
+// ── Three-dot menu helpers ──────────────────────────────────
+function toggleNoteMenu(e, noteId){
+  e.stopPropagation();
+  const menu = document.getElementById('noteMenu_' + noteId);
+  if(!menu) return;
+  const isOpen = menu.style.display !== 'none';
+  closeNoteMenus();
+  if(!isOpen) menu.style.display = 'block';
+}
+
+function closeNoteMenus(){
+  document.querySelectorAll('.note-menu-dropdown').forEach(m => m.style.display = 'none');
+}
+
+// close menus on any outside tap
+document.addEventListener('click', ()=>closeNoteMenus());
+
+// ── Note detail modal (read-only view, checklist-toggleable) ─
+function openNoteDetail(noteId){
+  const note = notes.find(n => String(n.id) === String(noteId));
+  if(!note) return;
+
+  document.getElementById('noteDetailTitle').textContent = note.title || 'Untitled';
+
+  const wasEdited = note.updatedAt && note.updatedAt !== note.createdAt;
+  const metaCreated = `<span class="note-meta-item"><b>Created</b> ${fmtTimestamp(note.createdAt)}</span>`;
+  const metaEdited  = wasEdited ? `<span class="note-meta-item"><b>Edited</b> ${fmtTimestamp(note.updatedAt)}</span>` : '';
+  document.getElementById('noteDetailMeta').innerHTML = metaCreated + metaEdited;
+
+  let content = '';
+  if(note.contentType === 'text'){
+    content = note.body ? `<div class="note-detail-body">${esc(note.body)}</div>` : '<div class="empty">No content yet.</div>';
+  } else if(note.contentType === 'list'){
+    content = note.checklist && note.checklist.length
+      ? `<div class="note-checklist-wrap">${note.checklist.map(c=>`
+          <div class="note-sub-row ${c.done?'done':''}" onclick="toggleNoteSubItemFromDetail(${jsArg(note.id)},${jsArg(c.id)})">
+            <div class="note-sub-check"></div>
+            <div class="note-sub-text">${esc(c.text)}</div>
+          </div>`).join('')}</div>`
+      : '<div class="empty">No items yet.</div>';
+  }
+  document.getElementById('noteDetailContent').innerHTML = content;
+  document.getElementById('noteDetailModal').classList.add('show');
+}
+
+function closeNoteDetailModal(){
+  document.getElementById('noteDetailModal').classList.remove('show');
+}
+
+function toggleNoteSubItemFromDetail(noteId, subId){
+  const note = notes.find(n => String(n.id) === String(noteId));
+  if(!note || !note.checklist) return;
+  const item = note.checklist.find(c => String(c.id) === String(subId));
+  if(!item) return;
+  item.done = !item.done;
+  note.updatedAt = new Date().toISOString();
+  saveNotes();
+  renderNotes();
+  // refresh detail modal in place
+  openNoteDetail(noteId);
+}
+
+// ── Note edit modal ─────────────────────────────────────────
+function toggleNoteContentUI(){
+  const type = document.getElementById('noteContentType').value;
+  document.getElementById('wrapNoteText').style.display = type === 'text' ? 'block' : 'none';
+  document.getElementById('wrapNoteList').style.display = type === 'list' ? 'block' : 'none';
+}
+
+function renderNoteModalChecklist(){
+  const wrap = document.getElementById('noteChecklistWrap');
+  if(!wrap) return;
+  wrap.innerHTML = tempNoteChecklist.map(c =>
+    `<div class="note-sub-row ${c.done?'done':''}">
+      <div class="note-sub-check" onclick="toggleTempNoteItem(${jsArg(c.id)})"></div>
+      <div class="note-sub-text">${esc(c.text)}</div>
+      <button onclick="removeTempNoteItem(${jsArg(c.id)})" style="background:none;border:none;color:var(--text-muted);font-size:16px;cursor:pointer;padding:0 0 0 8px;flex-shrink:0;">✕</button>
+    </div>`
+  ).join('');
+}
+
+function toggleTempNoteItem(id){
+  const item = tempNoteChecklist.find(c => String(c.id) === String(id));
+  if(item){ item.done = !item.done; renderNoteModalChecklist(); }
+}
+
+function removeTempNoteItem(id){
+  tempNoteChecklist = tempNoteChecklist.filter(c => String(c.id) !== String(id));
+  renderNoteModalChecklist();
+}
+
+function addNoteSubItem(){
+  const input = document.getElementById('noteSubInput');
+  const text = input.value.trim();
+  if(!text) return;
+  tempNoteChecklist.push({ id: createId(), text, done: false });
+  input.value = '';
+  renderNoteModalChecklist();
+}
+
+function openNoteModal(noteId){
+  editNoteId = noteId || null;
+  const isEdit = !!editNoteId;
+  const note = isEdit ? notes.find(n => String(n.id) === String(noteId)) : null;
+
+  document.getElementById('noteModalTitle').textContent = isEdit ? 'Edit Note' : 'New Note';
+  document.getElementById('noteTitle').value = note ? note.title : '';
+  document.getElementById('noteBody').value = (note && note.contentType === 'text') ? note.body : '';
+  document.getElementById('noteContentType').value = (note && note.contentType === 'list') ? 'list' : 'text';
+  tempNoteChecklist = (note && note.checklist) ? JSON.parse(JSON.stringify(note.checklist)) : [];
+
+  // timestamps in edit modal
+  const metaWrap = document.getElementById('noteModalMeta');
+  const metaCreated = document.getElementById('noteMetaCreated');
+  const metaUpdated = document.getElementById('noteMetaUpdated');
+  if(isEdit && note){
+    metaWrap.style.display = 'flex';
+    metaCreated.innerHTML = `<b>Created</b> ${fmtTimestamp(note.createdAt)}`;
+    const wasEdited = note.updatedAt && note.updatedAt !== note.createdAt;
+    metaUpdated.style.display = wasEdited ? 'inline' : 'none';
+    if(wasEdited) metaUpdated.innerHTML = `<b>Last edited</b> ${fmtTimestamp(note.updatedAt)}`;
+  } else {
+    metaWrap.style.display = 'none';
+  }
+
+  toggleNoteContentUI();
+  renderNoteModalChecklist();
+  document.getElementById('noteModal').classList.add('show');
+  if(!isEdit) setTimeout(()=>document.getElementById('noteTitle').focus(), 120);
+}
+
+function closeNoteModal(){
+  document.getElementById('noteModal').classList.remove('show');
+  editNoteId = null;
+  tempNoteChecklist = [];
+}
+
+function saveNote(){
+  const title = document.getElementById('noteTitle').value.trim();
+  if(!title){ alert('Please give this note a title.'); return; }
+  const contentType = document.getElementById('noteContentType').value;
+  const now = new Date().toISOString();
+
+  if(editNoteId){
+    const note = notes.find(n => String(n.id) === String(editNoteId));
+    if(!note) return;
+    note.title = title;
+    note.contentType = contentType;
+    note.body = contentType === 'text' ? document.getElementById('noteBody').value : '';
+    note.checklist = contentType === 'list' ? tempNoteChecklist.map(c=>({...c})) : [];
+    note.updatedAt = now;
+  } else {
+    notes.push({
+      id: createId(), title, contentType,
+      body: contentType === 'text' ? document.getElementById('noteBody').value : '',
+      checklist: contentType === 'list' ? tempNoteChecklist.map(c=>({...c})) : [],
+      createdAt: now, updatedAt: now
+    });
+  }
+  saveNotes();
+  closeNoteModal();
+  renderNotes();
+}
+
+function confirmDeleteNote(noteId){
+  const note = notes.find(n => String(n.id) === String(noteId));
+  if(!note) return;
+  notes = notes.filter(n => String(n.id) !== String(noteId));
+  saveNotes();
+  renderNotes();
+  const captured = note;
+  showUndoToast({title: note.title});
+  if(lastDeleted) lastDeleted._undoFn = ()=>{
+    notes.push(captured);
+    saveNotes();
+    renderNotes();
+  };
+}
+
+// Legacy alias kept for backward compat in case called elsewhere
+function deleteNote(){ if(editNoteId) confirmDeleteNote(editNoteId); }
+
+function toggleNoteSubItem(noteId, subId){
+  const note = notes.find(n => String(n.id) === String(noteId));
+  if(!note || !note.checklist) return;
+  const item = note.checklist.find(c => String(c.id) === String(subId));
+  if(!item) return;
+  item.done = !item.done;
+  note.updatedAt = new Date().toISOString();
+  saveNotes();
+  renderNotes();
 }
 
 document.getElementById('modal').addEventListener('mousedown',e=>{if(e.target.id==='modal')closeModal()});
 document.getElementById('dayModal').addEventListener('mousedown',e=>{if(e.target.id==='dayModal')closeDayModal()});
+document.getElementById('noteModal').addEventListener('mousedown',e=>{if(e.target.id==='noteModal')closeNoteModal()});
+document.getElementById('noteDetailModal').addEventListener('mousedown',e=>{if(e.target.id==='noteDetailModal')closeNoteDetailModal()});
 document.getElementById('subInput').addEventListener('keydown', e=>{if(e.key === 'Enter') { e.preventDefault(); addSubItem(); }});
+document.getElementById('noteSubInput').addEventListener('keydown', e=>{if(e.key === 'Enter'){e.preventDefault();addNoteSubItem();}});
 
 function getPreferredTheme(){
   const saved=safeGet(THEME_KEY);
@@ -988,19 +1388,6 @@ if ('serviceWorker' in navigator) {
 }
 
 seed();renderAll();
-
-const mainScroll = document.getElementById('scrollArea');
-mainScroll.addEventListener('scroll', () => {
-  const sections = ['pageToday', 'pageCalendar', 'pageUpcoming'];
-  const buttons = document.querySelectorAll('.nav-links button');
-  let currentActive = 0;
-  sections.forEach((id, index) => {
-    const el = document.getElementById(id);
-    if(el.getBoundingClientRect().top < window.innerHeight / 2) currentActive = index;
-  });
-  buttons.forEach(b => b.classList.remove('active'));
-  buttons[currentActive].classList.add('active');
-});
 </script>
 
 <script>
