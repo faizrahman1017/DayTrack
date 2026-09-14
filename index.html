@@ -582,14 +582,14 @@ function taskHTML(t){
  } else if (t.noteType === 'list' && t.checklist && t.checklist.length > 0) {
    notesHtml = `<div class="task-checklist">` + 
      t.checklist.map(c => `
-       <div class="subtask ${c.done ? 'done' : ''}" onclick="toggleSubTask(${jsArg(t.id)}, ${jsArg(c.id)}, event)">
+       <div class="subtask ${c.done ? 'done' : ''}" data-task-id="${esc(t.id)}" onclick="toggleSubTask(${jsArg(t.id)}, ${jsArg(c.id)}, event)">
          <div class="sub-check"></div>
          <div class="sub-text">${esc(c.text)}</div>
        </div>`).join('') + `</div>`;
  }
 
- return `<div class="task ${t.completed?'completed':''}" onclick="editTask(${jsArg(t.id)})">
- <div class="check" onclick="toggleTask(${jsArg(t.id)}, event)"></div>
+ return `<div class="task ${t.completed?'completed':''}" data-task-id="${esc(t.id)}" onclick="editTask(${jsArg(t.id)})">
+ <div class="check" data-task-id="${esc(t.id)}" onclick="toggleTask(${jsArg(t.id)}, event)"></div>
  <div style="min-width:0;">
    <div class="task-title-wrap">
      <div class="task-title">${esc(t.title)}</div>
@@ -631,7 +631,7 @@ function renderWeek(){
        <div class="day-num">${d.getDate()}</div>
      </div>
      <div class="day-row-tasks">
-       ${ts.map(t=>`<div class="mini-task-list ${t.type} ${t.completed?'done':''}" onclick="editTask(${jsArg(t.id)})"><span>${esc(t.title)}</span></div>`).join('')}
+       ${ts.map(t=>`<div class="mini-task-list ${t.type} ${t.completed?'done':''}" data-task-id="${esc(t.id)}" onclick="editTask(${jsArg(t.id)})"><span>${esc(t.title)}</span></div>`).join('')}
        <button class="add-mini-plus" onclick="openModal('${s}')">+</button>
      </div>
    </div>`
@@ -650,7 +650,7 @@ function renderMonth(){
    if(d.getMonth()!==m) cls.push('muted');
    if(s===today()) cls.push('today');
    if(ts.length) cls.push('has-task');
-   return `<div class="${cls.join(' ')}" onclick="openDayModal('${s}')"><div class="month-num">${d.getDate()}</div>${ts.slice(0,3).map(t=>`<div class="mini-task" onclick="event.stopPropagation();editTask(${t.id})">${esc(t.title)}</div>`).join('')}</div>`
+   return `<div class="${cls.join(' ')}" onclick="openDayModal('${s}')"><div class="month-num">${d.getDate()}</div>${ts.slice(0,3).map(t=>`<div class="mini-task" onclick="event.stopPropagation();editTask(${jsArg(t.id)})">${esc(t.title)}</div>`).join('')}</div>`
  }).join('')+'</div>';
 }
 
@@ -943,6 +943,15 @@ function toggleTheme(){
 }
 
 applyTheme(getPreferredTheme());
+
+// Safety fallback for rendered task interactions
+document.addEventListener('click', function(e){
+  const el=e.target.closest('[data-task-id]');
+  if(!el) return;
+  if(e.target.closest('.check, .subtask')) return;
+  const id=el.getAttribute('data-task-id');
+  if(id){ e.preventDefault(); editTask(id); }
+});
 
 // --- PWA: installability ---
 let deferredInstallPrompt = null;
