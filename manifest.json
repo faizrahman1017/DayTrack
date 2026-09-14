@@ -4,8 +4,8 @@
   "description": "A simple daily planner with tasks, notes, calendar and upcoming views.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f8f7f5",
-  "theme_color": "#262521",
+  "background_color": "#FFFEFA",
+  "theme_color": "#FFFEFA",
   "icons": [
     {
       "src": "icon-192.png",

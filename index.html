@@ -1478,8 +1478,39 @@ window.addEventListener('appinstalled', () => {
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js').catch((err) => {
+    navigator.serviceWorker.register('service-worker.js').then((reg) => {
+      // If a newer service worker is already waiting, activate it right away.
+      if (reg.waiting) reg.waiting.postMessage('SKIP_WAITING');
+
+      // Watch for a new service worker being found while this page is open,
+      // and let it take over as soon as it's installed.
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            newWorker.postMessage('SKIP_WAITING');
+          }
+        });
+      });
+
+      // Ask for an update check every time the app is opened/resumed,
+      // so a phone that already has this installed still finds new deploys.
+      reg.update().catch(() => {});
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') reg.update().catch(() => {});
+      });
+    }).catch((err) => {
       console.warn('Service worker registration failed:', err);
+    });
+
+    // Once the new service worker takes control, reload once so the page
+    // itself (not just the cache) reflects the latest deploy.
+    let refreshed = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshed) return;
+      refreshed = true;
+      window.location.reload();
     });
   });
 }
