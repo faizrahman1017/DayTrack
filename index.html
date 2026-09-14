@@ -7,8 +7,8 @@
 
 <!-- PWA: installability -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" media="(prefers-color-scheme: light)" content="#262521">
-<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#121110">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#FFFEFA">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0A0A0A">
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -18,79 +18,95 @@
 <style>
 :root{
   color-scheme: light dark;
-  --bg-page: #d9d7d2;
-  --bg-app: #f8f7f5;
-  --border-app: #c9c7c1;
+  /* --- Stabilo Neon inspired palette --- */
+  --bg-page: #FBF3D9;
+  --bg-app: #FFFEFA;
+  --border-app: #EDE3B7;
   --bg-card: #ffffff;
-  --border-card: #e2e1dc;
-  --border-subtle: #f2f2f2;
-  --border-input: #ddd;
-  --bg-subtle: #f2f1ee;
-  --text-primary: #262521;
-  --text-secondary: #777;
-  --text-muted: #999;
-  --text-faint: #aaa;
-  --accent: #262521;
-  --accent-contrast: #ffffff;
-  --bg-secondary-btn: #f0f0f0;
-  --text-secondary-btn: #333;
-  --chip-bg: #262521;
+  --border-card: #EFE7CB;
+  --border-subtle: #F5F0DE;
+  --border-input: #E3D9AD;
+  --bg-subtle: #FFF6D6;
+  --text-primary: #1F2C28;
+  --text-secondary: #5C6D66;
+  --text-muted: #8B948C;
+  --text-faint: #B7BDB2;
+  --accent: #F6C400;
+  --accent-contrast: #1F2C28;
+  --bg-secondary-btn: #F3EDD4;
+  --text-secondary-btn: #1F2C28;
+  --chip-bg: #0E4B3A;
   --chip-active-bg: #ffffff;
-  --chip-active-text: #262521;
-  --dot-personal: #e0e0e0;
-  --bg-overlay: rgba(0,0,0,.4);
+  --chip-active-text: #0E4B3A;
+  --dot-personal: #5FBAE9;
+  --bg-overlay: rgba(14,40,34,.45);
   --bg-modal-box: #ffffff;
-  --bg-bottomnav: rgba(255,255,255,0.9);
-  --border-bottomnav: #eaeaea;
-  --danger-bg: #fdecea;
-  --danger-text: #e0483c;
+  --bg-bottomnav: rgba(255,255,255,0.92);
+  --border-bottomnav: #F1E9C6;
+  --danger-bg: #FDEAF0;
+  --danger-text: #D5415C;
   --cell-bg: #ffffff;
-  --cell-has-task-bg: #f5f4f1;
-  --cell-muted-bg: #fbfbfa;
-  --cell-muted-has-task-bg: #f7f7f5;
-  --grid-line: #ececea;
+  --cell-has-task-bg: #FFF6D6;
+  --cell-muted-bg: #FCFBF2;
+  --cell-muted-has-task-bg: #FBF1CE;
+  --grid-line: #F1EAD1;
+  --pri-high: #EA597A;
+  --pri-medium: #F19545;
+  --pri-low: #03A270;
+  --cat-work: #1C8FC7;
+  --cat-personal: #D6408F;
+  --brand-teal: #03A270;
+  --done-check: #7C948C;
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --bg-page: #121110;
-    --bg-app: #1c1b19;
-    --border-app: #2c2a27;
-    --bg-card: #242320;
-    --border-card: #38362f;
-    --border-subtle: #322f2b;
-    --border-input: #47443f;
-    --bg-subtle: #2b2a26;
-    --text-primary: #f2f1ee;
-    --text-secondary: #b7b5b0;
-    --text-muted: #8a8884;
-    --text-faint: #6f6d68;
-    --accent: #f2f1ee;
-    --accent-contrast: #1c1b19;
-    --bg-secondary-btn: #322f2b;
-    --text-secondary-btn: #eeece8;
-    --chip-bg: #332f29;
-    --chip-active-bg: #4a463d;
-    --chip-active-text: #f2f1ee;
-    --dot-personal: #332f2b;
-    --bg-overlay: rgba(0,0,0,.6);
-    --bg-modal-box: #211f1c;
-    --bg-bottomnav: rgba(23,22,20,0.9);
-    --border-bottomnav: #322f2b;
-    --danger-bg: #3a201d;
-    --danger-text: #ff7a6b;
-    --cell-bg: #211f1c;
-    --cell-has-task-bg: #2b2a26;
-    --cell-muted-bg: #181715;
-    --cell-muted-has-task-bg: #1e1d1a;
-    --grid-line: #322f2b;
+    /* Dark mode: black stays the dominant base, other hues turn neon-bright */
+    --bg-page: #0A0A0A;
+    --bg-app: #121212;
+    --border-app: #262626;
+    --bg-card: #1B1B1B;
+    --border-card: #2C2C2C;
+    --border-subtle: #262626;
+    --border-input: #3A3A3A;
+    --bg-subtle: #241E0B;
+    --text-primary: #F5F5F0;
+    --text-secondary: #B9B9B2;
+    --text-muted: #8C8C86;
+    --text-faint: #64645C;
+    --accent: #FFDE59;
+    --accent-contrast: #14140F;
+    --bg-secondary-btn: #262626;
+    --text-secondary-btn: #F0F0EA;
+    --chip-bg: #0F5C46;
+    --chip-active-bg: #FFDE59;
+    --chip-active-text: #14140F;
+    --dot-personal: #7FD1FF;
+    --bg-overlay: rgba(0,0,0,.65);
+    --bg-modal-box: #171712;
+    --bg-bottomnav: rgba(10,10,10,0.92);
+    --border-bottomnav: #262626;
+    --danger-bg: #3A1620;
+    --danger-text: #FF6FA8;
+    --cell-bg: #171712;
+    --cell-has-task-bg: #2A230A;
+    --cell-muted-bg: #101008;
+    --cell-muted-has-task-bg: #1F1A08;
+    --grid-line: #262626;
+    --pri-high: #FF6F94;
+    --pri-medium: #FFA94D;
+    --pri-low: #29D191;
+    --cat-work: #5FCBFF;
+    --cat-personal: #FF6FC0;
+    --brand-teal: #29D191;
+    --done-check: #8FA89F;
   }
 }
 
 html[data-theme="light"]{
-  --bg-page:#d9d7d2;--bg-app:#f8f7f5;--border-app:#c9c7c1;--bg-card:#fff;--border-card:#e2e1dc;--border-subtle:#f2f2f2;--border-input:#ddd;--bg-subtle:#f2f1ee;--text-primary:#262521;--text-secondary:#777;--text-muted:#999;--text-faint:#aaa;--accent:#262521;--accent-contrast:#fff;--bg-secondary-btn:#f0f0f0;--text-secondary-btn:#333;--chip-bg:#262521;--chip-active-bg:#fff;--chip-active-text:#262521;--dot-personal:#e0e0e0;--bg-overlay:rgba(0,0,0,.4);--bg-modal-box:#fff;--bg-bottomnav:rgba(255,255,255,.9);--border-bottomnav:#eaeaea;--danger-bg:#fdecea;--danger-text:#e0483c;--cell-bg:#fff;--cell-has-task-bg:#f5f4f1;--cell-muted-bg:#fbfbfa;--cell-muted-has-task-bg:#f7f7f5;--grid-line:#ececea;
+  --bg-page:#FBF3D9;--bg-app:#FFFEFA;--border-app:#EDE3B7;--bg-card:#fff;--border-card:#EFE7CB;--border-subtle:#F5F0DE;--border-input:#E3D9AD;--bg-subtle:#FFF6D6;--text-primary:#1F2C28;--text-secondary:#5C6D66;--text-muted:#8B948C;--text-faint:#B7BDB2;--accent:#F6C400;--accent-contrast:#1F2C28;--bg-secondary-btn:#F3EDD4;--text-secondary-btn:#1F2C28;--chip-bg:#0E4B3A;--chip-active-bg:#fff;--chip-active-text:#0E4B3A;--dot-personal:#5FBAE9;--bg-overlay:rgba(14,40,34,.45);--bg-modal-box:#fff;--bg-bottomnav:rgba(255,255,255,.92);--border-bottomnav:#F1E9C6;--danger-bg:#FDEAF0;--danger-text:#D5415C;--cell-bg:#fff;--cell-has-task-bg:#FFF6D6;--cell-muted-bg:#FCFBF2;--cell-muted-has-task-bg:#FBF1CE;--grid-line:#F1EAD1;--pri-high:#EA597A;--pri-medium:#F19545;--pri-low:#03A270;--cat-work:#1C8FC7;--cat-personal:#D6408F;--brand-teal:#03A270;--done-check:#7C948C;
 }
 html[data-theme="dark"]{
-  --bg-page:#121110;--bg-app:#1c1b19;--border-app:#2c2a27;--bg-card:#242320;--border-card:#38362f;--border-subtle:#322f2b;--border-input:#47443f;--bg-subtle:#2b2a26;--text-primary:#f2f1ee;--text-secondary:#b7b5b0;--text-muted:#8a8884;--text-faint:#6f6d68;--accent:#f2f1ee;--accent-contrast:#1c1b19;--bg-secondary-btn:#322f2b;--text-secondary-btn:#eeece8;--chip-bg:#332f29;--chip-active-bg:#4a463d;--chip-active-text:#f2f1ee;--dot-personal:#332f2b;--bg-overlay:rgba(0,0,0,.6);--bg-modal-box:#211f1c;--bg-bottomnav:rgba(23,22,20,.9);--border-bottomnav:#322f2b;--danger-bg:#3a201d;--danger-text:#ff7a6b;--cell-bg:#211f1c;--cell-has-task-bg:#2b2a26;--cell-muted-bg:#181715;--cell-muted-has-task-bg:#1e1d1a;--grid-line:#322f2b;
+  --bg-page:#0A0A0A;--bg-app:#121212;--border-app:#262626;--bg-card:#1B1B1B;--border-card:#2C2C2C;--border-subtle:#262626;--border-input:#3A3A3A;--bg-subtle:#241E0B;--text-primary:#F5F5F0;--text-secondary:#B9B9B2;--text-muted:#8C8C86;--text-faint:#64645C;--accent:#FFDE59;--accent-contrast:#14140F;--bg-secondary-btn:#262626;--text-secondary-btn:#F0F0EA;--chip-bg:#0F5C46;--chip-active-bg:#FFDE59;--chip-active-text:#14140F;--dot-personal:#7FD1FF;--bg-overlay:rgba(0,0,0,.65);--bg-modal-box:#171712;--bg-bottomnav:rgba(10,10,10,.92);--border-bottomnav:#262626;--danger-bg:#3A1620;--danger-text:#FF6FA8;--cell-bg:#171712;--cell-has-task-bg:#2A230A;--cell-muted-bg:#101008;--cell-muted-has-task-bg:#1F1A08;--grid-line:#262626;--pri-high:#FF6F94;--pri-medium:#FFA94D;--pri-low:#29D191;--cat-work:#5FCBFF;--cat-personal:#FF6FC0;--brand-teal:#29D191;--done-check:#8FA89F;
 }
 
 /* Desktop background & 9:16 ratio lock */
@@ -118,8 +134,8 @@ main { flex: 1; overflow-y: auto; scroll-behavior: smooth; padding: 32px 24px 10
 
 /* Header & Global Sections */
 .top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
-.eyebrow { font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; }
-.title { font-size: 26px; font-weight: 800; margin: 4px 0; letter-spacing: -0.5px; }
+.eyebrow { font-size: 11px; color: var(--brand-teal); letter-spacing: 0.5px; text-transform: uppercase; font-weight: 700; }
+.title { font-size: 39px; font-weight: 800; margin: 6px 0 4px; letter-spacing: -0.8px; line-height: 1.05; }
 .date { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
 .btn { border: 0; border-radius: 8px; padding: 8px 16px; cursor: pointer; background: var(--accent); color: var(--accent-contrast); font-size: 13px; font-weight: 600; white-space: nowrap; }
 .btn.secondary { background: var(--bg-secondary-btn); color: var(--text-secondary-btn); }
@@ -132,21 +148,11 @@ section { margin-bottom: 40px; }
 .today-grid { display: flex; flex-direction: column; }
 
 /* Compact side-by-side stat pills: shows Work + Personal progress together at a glance */
-.stat-row { display: flex; gap: 10px; margin-bottom: 20px; }
-.stat-pill { flex: 1; background: var(--bg-subtle); border-radius: 14px; padding: 12px 14px; }
-.stat-pill-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.stat-pill-label { font-size: 12px; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px; }
-.stat-pill-label .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-.stat-pill-label .dot.work { background: var(--text-primary); }
-.stat-pill-label .dot.personal { background: var(--dot-personal); border: 1px solid var(--border-input); }
-.stat-pill-count { font-size: 11px; color: var(--text-muted); font-weight: 600; }
 
 .task-group-head { display: flex; justify-content: space-between; align-items: center; margin: 22px 0 12px; }
 .task-group-head:first-of-type { margin-top: 0; }
 .task-group-head h3 { margin: 0; font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; }
 .progress-mini { font-size: 11px; color: var(--text-muted); font-weight: 600; text-align: right; }
-.bar { height: 4px; background: var(--bg-subtle); border-radius: 4px; overflow: hidden; margin-top: 6px; }
-.bar i { display: block; height: 100%; background: var(--accent); transition: .3s ease; }
 .tasks { display: flex; flex-direction: column; }
 .task-divider { height: 1px; background: var(--border-subtle); margin: 4px 0 0; }
 
@@ -166,9 +172,9 @@ section { margin-bottom: 40px; }
 .task-title-wrap { display: flex; align-items: center; gap: 8px; margin-bottom: 1px; }
 .task-title { font-size: 14px; font-weight: 500; line-height: 1.4; color: var(--text-primary); }
 .pri-box { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.pri-box.high { background: #e0483c; } /* Red */
-.pri-box.medium { background: #eaa927; } /* Yellow/Amber */
-.pri-box.low { background: #3f9d5c; } /* Green */
+.pri-box.high { background: var(--pri-high); } /* Stabilo coral */
+.pri-box.medium { background: var(--pri-medium); } /* Stabilo orange */
+.pri-box.low { background: var(--pri-low); } /* Stabilo teal */
 
 /* Task time */
 .task-time { font-size: 12px; font-weight: 500; color: var(--text-muted); padding-top: 2px; }
@@ -178,7 +184,7 @@ section { margin-bottom: 40px; }
 .task-checklist { margin-top: 6px; display: flex; flex-direction: column; gap: 8px; }
 .subtask { display: flex; align-items: flex-start; gap: 8px; cursor: pointer; }
 .sub-check { width: 14px; height: 14px; border: 1px solid var(--border-input); border-radius: 4px; position: relative; flex-shrink: 0; margin-top: 2px; }
-.subtask.done .sub-check { background: #888; border-color: #888; }
+.subtask.done .sub-check { background: var(--done-check); border-color: var(--done-check); }
 .subtask.done .sub-check:after { content: "✓"; color: white; position: absolute; font-size: 9px; left: 2px; top: 1px; font-weight: bold; }
 .subtask.done .sub-text { text-decoration: line-through; color: var(--text-faint); }
 .sub-text { font-size: 12px; color: var(--text-secondary); line-height: 1.4; }
@@ -224,8 +230,10 @@ section { margin-bottom: 40px; }
 .mini-task-list span { flex: 1; font-weight: 500; }
 .mini-task-list.done span { text-decoration: line-through; color: var(--text-faint); }
 /* Simple dot indicator in the weekly view */
-.mini-task-list.work::before { content: "•"; color: var(--text-faint); margin-right: 8px; font-size: 18px; line-height: 0; }
+.mini-task-list.work::before { content: "•"; color: var(--cat-work); margin-right: 8px; font-size: 18px; line-height: 0; }
 .mini-task-list.personal::before { content: "•"; color: var(--dot-personal); margin-right: 8px; font-size: 18px; line-height: 0; }
+.task-group-head.cat-work h3 { color: var(--cat-work); }
+.task-group-head.cat-personal h3 { color: var(--cat-personal); }
 
 /* Small plus button in the weekly view (minimal) */
 .add-mini-plus { background: transparent; color: var(--text-muted); border: none; font-size: 18px; font-weight: 400; cursor: pointer; display: flex; align-items: center; justify-content: center; align-self: flex-start; margin-top: 4px; padding: 0 8px 0 0; transition: color 0.2s; }
@@ -238,7 +246,7 @@ section { margin-bottom: 40px; }
 .upcoming-item-new:first-child { padding-top: 0; }
 .upcoming-date-box { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 44px; background: var(--bg-subtle); border-radius: 10px; padding: 8px 0; }
 .up-date { font-size: 18px; font-weight: 800; color: var(--text-primary); line-height: 1; letter-spacing: -0.5px; }
-.up-month { font-size: 10px; font-weight: 700; color: var(--text-secondary); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.up-month { font-size: 10px; font-weight: 700; color: var(--brand-teal); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
 .upcoming-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
 .upcoming-type-text { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; }
 
@@ -267,12 +275,22 @@ section { margin-bottom: 40px; }
 .modal-actions .btn.secondary { background: var(--bg-secondary-btn); color: var(--text-secondary-btn); }
 .modal-actions .btn.danger { background: var(--danger-bg); color: var(--danger-text); }
 
-/* Reschedule (copy/move to another date) */
-.reschedule-box { background: var(--bg-subtle); border-radius: 14px; padding: 16px; margin-bottom: 20px; }
-.reschedule-box label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 8px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;}
-.reschedule-box input[type="date"] { width: 100%; padding: 10px 0; border: none; border-bottom: 1px solid var(--border-input); background: transparent; outline: none; font-size: 15px; font-weight: 500; margin-bottom: 12px; color: var(--text-primary); }
-.reschedule-actions { display: flex; gap: 10px; }
-.reschedule-actions button { flex: 1; border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+/* Compact three-dot task actions */
+.modal-title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 24px; position: relative; }
+.modal-title-row h2 { margin: 0; }
+.task-menu-wrap { position: relative; flex-shrink: 0; }
+.task-menu-btn { width: 38px; height: 38px; border: 1px solid var(--border-card); border-radius: 50%; background: var(--bg-card); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 21px; line-height: 1; letter-spacing: 1px; padding: 0 0 6px; }
+.task-menu-btn:hover { background: var(--bg-subtle); }
+.task-menu-dropdown { position: absolute; right: 0; top: 46px; width: 230px; background: var(--bg-modal-box); border: 1px solid var(--border-card); border-radius: 14px; padding: 6px; box-shadow: 0 12px 30px rgba(0,0,0,.12); z-index: 90; }
+.task-menu-dropdown button { width: 100%; border: 0; background: transparent; color: var(--text-primary); text-align: left; padding: 11px 12px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.task-menu-dropdown button:hover { background: var(--bg-subtle); }
+.task-menu-dropdown button.danger { color: var(--danger-text); }
+.task-menu-divider { height: 1px; background: var(--border-subtle); margin: 5px 4px; }
+.task-reschedule-panel { margin: 4px 4px 6px; padding: 10px 10px 11px; background: var(--bg-subtle); border-radius: 11px; }
+.task-reschedule-panel label { display: block; font-size: 10px; color: var(--text-muted); margin-bottom: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; }
+.task-reschedule-panel input[type="date"] { width: 100%; padding: 7px 0; border: 0; border-bottom: 1px solid var(--border-input); background: transparent; outline: none; font-size: 13px; color: var(--text-primary); margin-bottom: 9px; }
+.task-reschedule-actions { display: flex; gap: 7px; }
+.task-reschedule-actions button { flex: 1; padding: 8px 7px; font-size: 11px; border-radius: 8px; }
 
 /* Sublist Input Box */
 .sub-input-row { display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--border-input); align-items: center; }
@@ -417,8 +435,8 @@ section { margin-bottom: 40px; }
   <main id="scrollArea">
     <header class="top">
       <div>
-        <div class="eyebrow">Your Day, Organized</div>
-        <div class="title">Good morning.</div>
+        <div class="eyebrow">Your Daily Plan</div>
+        <div class="title" id="greetingDay">Monday</div>
         <div class="date" id="currentDate"></div>
       </div>
       <div class="top-actions">
@@ -431,31 +449,14 @@ section { margin-bottom: 40px; }
       <section id="dpToday">
         <div class="section-title"><h2>Today</h2><span id="todayLabel"></span></div>
 
-        <!-- Work + Personal shown together in one card so the day's full load is visible at a glance -->
+        <!-- Work + Personal are kept in one card; progress now sits beside each category. -->
         <div class="card today-grid">
-          <div class="stat-row">
-            <div class="stat-pill">
-              <div class="stat-pill-top">
-                <div class="stat-pill-label"><span class="dot work"></span>Work</div>
-                <div class="stat-pill-count" id="workProgress"></div>
-              </div>
-              <div class="bar"><i id="workBar"></i></div>
-            </div>
-            <div class="stat-pill">
-              <div class="stat-pill-top">
-                <div class="stat-pill-label"><span class="dot personal"></span>Personal</div>
-                <div class="stat-pill-count" id="personalProgress"></div>
-              </div>
-              <div class="bar"><i id="personalBar"></i></div>
-            </div>
-          </div>
-
-          <div class="task-group-head"><h3>Work</h3></div>
+          <div class="task-group-head cat-work"><h3>Work</h3><span class="progress-mini" id="workProgress"></span></div>
           <div class="tasks" id="workTasks"></div>
 
           <div class="task-divider"></div>
 
-          <div class="task-group-head"><h3>Personal</h3></div>
+          <div class="task-group-head cat-personal"><h3>Personal</h3><span class="progress-mini" id="personalProgress"></span></div>
           <div class="tasks" id="personalTasks"></div>
         </div>
       </section>
@@ -502,7 +503,27 @@ section { margin-bottom: 40px; }
 
   <div class="modal" id="modal">
     <div class="modal-box">
-      <h2 id="modalTitle">Task Details</h2>
+      <div class="modal-title-row">
+        <h2 id="modalTitle">Task Details</h2>
+        <div class="task-menu-wrap" id="taskMenuWrap" style="display:none;">
+          <button type="button" class="task-menu-btn" onclick="toggleTaskActionMenu(event)" aria-label="Task options" title="Task options">···</button>
+          <div class="task-menu-dropdown" id="taskActionMenu" style="display:none;">
+            <button type="button" onclick="toggleReschedulePanel(event)">Reschedule</button>
+            <div class="task-reschedule-panel" id="taskReschedulePanel" style="display:none;">
+              <label>Move or copy to date</label>
+              <input type="date" id="rescheduleDate">
+              <div class="task-reschedule-actions">
+                <button type="button" class="btn secondary" onclick="copyTaskToDate()">Copy to date</button>
+                <button type="button" class="btn secondary" onclick="moveTaskToDate()">Move to date</button>
+              </div>
+            </div>
+            <button type="button" onclick="copyTaskToNotes()">Copy to Notes</button>
+            <button type="button" onclick="moveTaskToNotes()">Move to Notes</button>
+            <div class="task-menu-divider"></div>
+            <button type="button" class="danger" onclick="deleteTask()">Delete</button>
+          </div>
+        </div>
+      </div>
       <div class="field"><label>Task Name</label><input id="taskTitle" placeholder="What needs to be done?"></div>
       <div class="form-grid">
         <div class="field"><label>Category</label><select id="taskType"><option value="work">Work</option><option value="personal">Personal</option></select></div>
@@ -534,21 +555,10 @@ section { margin-bottom: 40px; }
         <div class="sublist-render" id="sublistContainer"></div>
       </div>
 
-      <div class="reschedule-box" id="rescheduleBox" style="display:none;">
-        <label>Reschedule this task</label>
-        <input type="date" id="rescheduleDate">
-        <div class="reschedule-actions">
-          <button type="button" class="btn secondary" onclick="copyTaskToDate()">Copy to date</button>
-          <button type="button" class="btn secondary" onclick="moveTaskToDate()">Move to date</button>
-        </div>
-      </div>
 
-      <div class="modal-actions with-delete">
-        <button class="btn danger" id="deleteTaskBtn" style="display:none;" onclick="deleteTask()">Delete</button>
-        <div style="display:flex; gap:12px;">
-          <button class="btn secondary" onclick="closeModal()">Cancel</button>
-          <button class="btn" onclick="saveTask()">Save</button>
-        </div>
+      <div class="modal-actions" style="justify-content:flex-end;">
+        <button class="btn secondary" onclick="closeModal()">Cancel</button>
+        <button class="btn" onclick="saveTask()">Save</button>
       </div>
     </div>
   </div>
@@ -782,14 +792,15 @@ function taskHTML(t){
 }
 
 function sectionProgress(arr,label){
- let done=arr.filter(t=>t.completed).length,total=arr.length,p=total?Math.round(done/total*100):0;
- document.getElementById(label+'Progress').textContent=`${done}/${total}`;
- document.getElementById(label+'Bar').style.width=p+'%'
+ let done=arr.filter(t=>t.completed).length,total=arr.length;
+ const el=document.getElementById(label+'Progress');
+ if(el) el.textContent = total ? `${done}/${total} completed` : '0 tasks';
 }
 
 function renderToday(){
  let ts=sortByTime(tasks.filter(t=>t.date===today())),w=ts.filter(t=>t.type==='work'),p=ts.filter(t=>t.type==='personal');
- document.getElementById('currentDate').textContent=fmtDate(today(),{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+ document.getElementById('greetingDay').textContent=fmtDate(today(),{weekday:'long'});
+ document.getElementById('currentDate').textContent=fmtDate(today(),{day:'numeric',month:'long',year:'numeric'});
  document.getElementById('todayLabel').textContent=fmtDate(today(), {day:'numeric',month:'short'});
  document.getElementById('workTasks').innerHTML=w.length?w.map(taskHTML).join(''):'<div class="empty">No tasks yet — tap + to add one.</div>';
  document.getElementById('personalTasks').innerHTML=p.length?p.map(taskHTML).join(''):'<div class="empty">No tasks yet — tap + to add one.</div>';
@@ -884,6 +895,29 @@ function renderTempChecklist(){
   ).join('');
 }
 
+function closeTaskActionMenu(){
+ const menu=document.getElementById('taskActionMenu');
+ if(menu) menu.style.display='none';
+ const panel=document.getElementById('taskReschedulePanel');
+ if(panel) panel.style.display='none';
+}
+
+function toggleTaskActionMenu(e){
+ if(e) e.stopPropagation();
+ const menu=document.getElementById('taskActionMenu');
+ if(!menu) return;
+ const isOpen=menu.style.display!=='none';
+ closeTaskActionMenu();
+ if(!isOpen) menu.style.display='block';
+}
+
+function toggleReschedulePanel(e){
+ if(e) e.stopPropagation();
+ const panel=document.getElementById('taskReschedulePanel');
+ if(!panel) return;
+ panel.style.display=panel.style.display==='none' ? 'block' : 'none';
+}
+
 function openModal(date=today()){
  editId=null;
  document.getElementById('modalTitle').textContent='Add task';
@@ -895,8 +929,8 @@ function openModal(date=today()){
  tempChecklist = [];
  renderTempChecklist();
  toggleNoteUI();
- document.getElementById('rescheduleBox').style.display='none';
- document.getElementById('deleteTaskBtn').style.display='none';
+ document.getElementById('taskMenuWrap').style.display='none';
+ closeTaskActionMenu();
  document.getElementById('modal').classList.add('show');
 }
 
@@ -917,12 +951,12 @@ function editTask(id){
  renderTempChecklist();
  toggleNoteUI();
  document.getElementById('rescheduleDate').value=t.date;
- document.getElementById('rescheduleBox').style.display='block';
- document.getElementById('deleteTaskBtn').style.display='inline-block';
+ document.getElementById('taskMenuWrap').style.display='block';
+ closeTaskActionMenu();
  document.getElementById('modal').classList.add('show');
 }
 
-function closeModal(){document.getElementById('modal').classList.remove('show')}
+function closeModal(){closeTaskActionMenu();document.getElementById('modal').classList.remove('show')}
 
 function copyTaskToDate(){
  if(!editId) return;
@@ -953,6 +987,63 @@ function moveTaskToDate(){
  renderAll();
 }
 
+// ── Send a Day Plan task to Notes ────────────────────────────
+// Keeps title as title, descriptive note as body, checklist as checklist.
+// Drops fields Notes doesn't have: date, time, type (work/personal), priority, completed state.
+function taskToNoteData(t){
+ const now = new Date().toISOString();
+ const contentType = t.noteType === 'list' ? 'list' : 'text';
+ return {
+   id: createId(),
+   title: t.title,
+   contentType,
+   body: contentType === 'text' ? (t.noteText || '') : '',
+   checklist: contentType === 'list' ? (t.checklist || []).map(c => ({ id: createId(), text: c.text, done: Boolean(c.done) })) : [],
+   createdAt: now,
+   updatedAt: now
+ };
+}
+
+function copyTaskToNotes(){
+ if(!editId) return;
+ let t = tasks.find(x=>String(x.id)===String(editId));
+ if(!t) return;
+ const note = taskToNoteData(t);
+ notes.push(note);
+ saveNotes();
+ renderNotes();
+ closeModal();
+ showUndoToast({title: t.title}, `Copied "${t.title}" to Notes`);
+ if(lastDeleted) lastDeleted._undoFn = ()=>{
+   notes = notes.filter(n => String(n.id) !== String(note.id));
+   saveNotes();
+   renderNotes();
+ };
+}
+
+function moveTaskToNotes(){
+ if(!editId) return;
+ let t = tasks.find(x=>String(x.id)===String(editId));
+ if(!t) return;
+ const note = taskToNoteData(t);
+ notes.push(note);
+ saveNotes();
+ tasks = tasks.filter(x=>String(x.id)!==String(editId));
+ save();
+ closeModal();
+ renderAll();
+ refreshDayModal();
+ showUndoToast(t, `Moved "${t.title}" to Notes`);
+ if(lastDeleted) lastDeleted._undoFn = ()=>{
+   tasks.push(t);
+   save();
+   notes = notes.filter(n => String(n.id) !== String(note.id));
+   saveNotes();
+   renderAll();
+   refreshDayModal();
+ };
+}
+
 let lastDeleted = null;
 
 function deleteTask(){
@@ -967,11 +1058,11 @@ function deleteTask(){
  showUndoToast(t);
 }
 
-function showUndoToast(deletedItem){
+function showUndoToast(deletedItem, message){
  if(lastDeleted && lastDeleted.timeoutId) clearTimeout(lastDeleted.timeoutId);
  lastDeleted = { task: deletedItem };
  const label = deletedItem.title || 'Item';
- document.getElementById('toastMsg').textContent = `Deleted "${label}"`;
+ document.getElementById('toastMsg').textContent = message || `Deleted "${label}"`;
  document.getElementById('toast').classList.add('show');
  lastDeleted.timeoutId = setTimeout(()=>{
    document.getElementById('toast').classList.remove('show');
@@ -1127,7 +1218,10 @@ function closeNoteMenus(){
 }
 
 // close menus on any outside tap
-document.addEventListener('click', ()=>closeNoteMenus());
+document.addEventListener('click', ()=>{
+  closeNoteMenus();
+  closeTaskActionMenu();
+});
 
 // ── Note detail modal (read-only view, checklist-toggleable) ─
 function openNoteDetail(noteId){
@@ -1311,6 +1405,9 @@ document.getElementById('noteModal').addEventListener('mousedown',e=>{if(e.targe
 document.getElementById('noteDetailModal').addEventListener('mousedown',e=>{if(e.target.id==='noteDetailModal')closeNoteDetailModal()});
 document.getElementById('subInput').addEventListener('keydown', e=>{if(e.key === 'Enter') { e.preventDefault(); addSubItem(); }});
 document.getElementById('noteSubInput').addEventListener('keydown', e=>{if(e.key === 'Enter'){e.preventDefault();addNoteSubItem();}});
+
+const taskActionMenuEl=document.getElementById('taskActionMenu');
+if(taskActionMenuEl) taskActionMenuEl.addEventListener('click', e=>e.stopPropagation());
 
 function getPreferredTheme(){
   const saved=safeGet(THEME_KEY);
