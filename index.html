@@ -445,7 +445,7 @@ section { margin-bottom: 40px; }
 </div>
 
 <script>
-const STORAGE_KEY = 'dailyPlannerTasks_v2';
+const STORAGE_KEY = 'dailyPlannerTasks_v3_clean';
 const LEGACY_STORAGE_KEY = 'dailyPlannerTasks';
 const THEME_KEY = 'daytrackTheme';
 const DATA_VERSION = 2;
@@ -1002,5 +1002,34 @@ mainScroll.addEventListener('scroll', () => {
   buttons[currentActive].classList.add('active');
 });
 </script>
+
+<script>
+/* Checklist interaction safety layer */
+document.addEventListener('click', function(e) {
+  const check = e.target.closest('.check');
+  if (!check) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const taskEl = check.closest('[data-task-id]');
+  if (!taskEl) return;
+  const taskId = taskEl.getAttribute('data-task-id');
+
+  const subtaskEl = check.closest('[data-subtask-id]');
+  if (subtaskEl && typeof toggleSubTask === 'function') {
+    toggleSubTask(taskId, subtaskEl.getAttribute('data-subtask-id'), e);
+  } else if (typeof toggleTask === 'function') {
+    toggleTask(taskId, e);
+  }
+}, true);
+
+document.addEventListener('keydown', function(e) {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  const check = e.target.closest('.check');
+  if (!check) return;
+  e.preventDefault();
+  check.click();
+});
+</script>
+
 </body>
 </html>
