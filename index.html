@@ -1706,7 +1706,7 @@ async function authSubmit(mode){
   authMsg(''); setAuthBusy(true);
   try{
     const res = mode==='signup'
-      ? await sb.auth.signUp({email,password})
+      ? await sb.auth.signUp({email,password,options:{emailRedirectTo:window.location.origin}})
       : await sb.auth.signInWithPassword({email,password});
     if(res.error) throw res.error;
     if(res.data.session) await onSignedIn(res.data.session.user);
