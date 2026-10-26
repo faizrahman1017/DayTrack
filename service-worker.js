@@ -1,5 +1,5 @@
 // Bump this on every deploy that changes cached files, so old phones drop the stale cache.
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = `daily-planner-cache-${CACHE_VERSION}`;
 const APP_SHELL = [
   './',
@@ -34,6 +34,10 @@ self.addEventListener('message', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET') return;
+
+  // Only handle our own files. Supabase API calls and the CDN script are cross-origin:
+  // let them go straight to the network so data is never served stale from cache.
+  if (new URL(req.url).origin !== self.location.origin) return;
 
   // Navigation / HTML requests: always try the network first so a new deploy
   // shows up immediately. Only fall back to the cached copy when offline.

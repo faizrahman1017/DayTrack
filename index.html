@@ -15,6 +15,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Planner">
 <meta name="mobile-web-app-capable" content="yes">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="config.js"></script>
 <style>
 :root{
   color-scheme: light dark;
@@ -447,6 +449,21 @@ section { margin-bottom: 40px; }
 #noteDetailModal .note-sub-text{font-size:14px;line-height:1.3}
 @media(max-width:700px){.tasks .task{padding:8px 0!important}}
 
+
+/* --- Auth overlay + sync status (Supabase) --- */
+.auth-overlay{position:fixed;inset:0;z-index:1000;background:var(--bg-page);display:none;align-items:center;justify-content:center;padding:24px;}
+.auth-overlay.show{display:flex}
+.auth-box{width:100%;max-width:360px;background:var(--bg-modal-box);border:1px solid var(--border-card);border-radius:16px;padding:24px;}
+.auth-box h2{margin:0 0 4px;font-size:20px;color:var(--text-primary)}
+.auth-box p{margin:0 0 16px;font-size:13px;color:var(--text-secondary);line-height:1.4}
+.auth-box input{width:100%;box-sizing:border-box;padding:10px 12px;margin-bottom:10px;border:1px solid var(--border-input);border-radius:8px;background:var(--bg-card);color:var(--text-primary);font-size:16px;font-family:inherit}
+.auth-actions{display:flex;gap:8px}
+.auth-actions .btn{flex:1;padding:10px 16px}
+.auth-actions .btn:disabled{opacity:.5;cursor:default}
+.auth-msg{min-height:18px;font-size:12px;margin:2px 0 10px;color:var(--danger-text);line-height:1.4}
+.auth-msg.ok{color:var(--brand-teal)}
+.sync-status{font-size:11px;color:var(--text-muted);align-self:center;margin-right:2px}
+.sync-status.error{color:var(--danger-text)}
 </style>
 </head>
 <body>
@@ -460,6 +477,8 @@ section { margin-bottom: 40px; }
         <div class="date" id="currentDate"></div>
       </div>
       <div class="top-actions">
+        <span class="sync-status" id="syncStatus"></span>
+        <button class="theme-btn" id="logoutBtn" type="button" onclick="logout()" aria-label="Sign out" title="Sign out"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
         <button class="theme-btn" id="themeBtn" type="button" onclick="toggleTheme()" aria-label="Switch to dark mode" title="Switch to dark mode"></button>
         <button class="btn" id="installBtn" style="display:none;" onclick="installApp()">Install app</button>
       </div>
@@ -650,6 +669,20 @@ section { margin-bottom: 40px; }
   </div>
 </div>
 
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-box">
+    <h2>Daily Planner</h2>
+    <p>Sign in so your tasks and notes are saved to the database and stay in sync across devices.</p>
+    <input id="authEmail" type="email" placeholder="Email" autocomplete="username" inputmode="email">
+    <input id="authPass" type="password" placeholder="Password (min. 6 characters)" autocomplete="current-password">
+    <div class="auth-msg" id="authMsg"></div>
+    <div class="auth-actions">
+      <button class="btn secondary" id="signUpBtn" type="button" onclick="authSubmit('signup')">Sign up</button>
+      <button class="btn" id="signInBtn" type="button" onclick="authSubmit('signin')">Sign in</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const STORAGE_KEY = 'dailyPlannerTasks_v3_clean';
 const LEGACY_STORAGE_KEY = 'dailyPlannerTasks';
@@ -665,7 +698,12 @@ function isValidDateString(value){
 
 function createId(){
   if(window.crypto && typeof window.crypto.randomUUID==='function') return window.crypto.randomUUID();
-  return `${Date.now()}_${Math.random().toString(36).slice(2,10)}`;
+  const b=new Uint8Array(16);
+  if(window.crypto && window.crypto.getRandomValues) window.crypto.getRandomValues(b);
+  else for(let i=0;i<16;i++) b[i]=Math.floor(Math.random()*256);
+  b[6]=(b[6]&0x0f)|0x40; b[8]=(b[8]&0x3f)|0x80;
+  const h=Array.from(b,x=>x.toString(16).padStart(2,'0')).join('');
+  return `${h.slice(0,8)}-${h.slice(8,12)}-${h.slice(12,16)}-${h.slice(16,20)}-${h.slice(20)}`;
 }
 
 function safeGet(key){
@@ -728,7 +766,7 @@ function loadTasks(){
   return [];
 }
 
-let tasks=loadTasks();
+let tasks=[];
 let editId=null, view='week', calendarDate=new Date();
 let tempChecklist = []; 
 let dayModalDate = null;
@@ -738,13 +776,135 @@ function iso(d){return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDat
 function dateFrom(s){const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)}
 function today(){return iso(new Date())}
 function fmtDate(s,opt={day:'numeric',month:'short',year:'numeric'}){return dateFrom(s).toLocaleDateString('en-US',opt)}
-function save(){
-  try {
-    safeSet(STORAGE_KEY,JSON.stringify(tasks));
-  } catch(e){
-    console.warn('Could not save tasks to local storage.',e);
+// ===== SUPABASE SYNC START =====
+// Values come from config.js, which build.js generates from env vars (SUPABASE_URL, SUPABASE_ANON_KEY).
+const SUPABASE_URL = (window.APP_CONFIG && window.APP_CONFIG.SUPABASE_URL) || '';
+const SUPABASE_ANON_KEY = (window.APP_CONFIG && window.APP_CONFIG.SUPABASE_ANON_KEY) || '';
+
+const sb = window.supabase.createClient(SUPABASE_URL || 'https://missing-config.invalid', SUPABASE_ANON_KEY || 'missing');
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isoOr(v){ const d=new Date(v); return Number.isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString(); }
+
+function taskToRow(t){
+  return {
+    id:String(t.id), user_id:currentUser.id,
+    title:t.title, type:t.type, priority:t.priority, date:t.date, time:t.time||'',
+    completed:!!t.completed, note_type:t.noteType||'none', note_text:t.noteText||'',
+    checklist:Array.isArray(t.checklist)?t.checklist:[],
+    created_at:isoOr(t.createdAt), updated_at:isoOr(t.updatedAt)
+  };
+}
+function rowToTask(r){
+  return {
+    id:r.id, title:r.title, type:r.type, priority:r.priority, date:r.date, time:r.time||'',
+    completed:!!r.completed, noteType:r.note_type, noteText:r.note_text||'',
+    checklist:Array.isArray(r.checklist)?r.checklist:[],
+    createdAt:isoOr(r.created_at), updatedAt:isoOr(r.updated_at)
+  };
+}
+function noteToRow(n){
+  return {
+    id:String(n.id), user_id:currentUser.id,
+    title:n.title||'', content_type:n.contentType==='list'?'list':'text', body:n.body||'',
+    checklist:Array.isArray(n.checklist)?n.checklist:[],
+    created_at:isoOr(n.createdAt), updated_at:isoOr(n.updatedAt||n.createdAt)
+  };
+}
+function rowToNote(r){
+  return {
+    id:r.id, title:r.title||'', contentType:r.content_type, body:r.body||'',
+    checklist:Array.isArray(r.checklist)?r.checklist:[],
+    createdAt:isoOr(r.created_at), updatedAt:isoOr(r.updated_at)
+  };
+}
+
+// tasks / notes get reassigned in places (tasks = tasks.filter(...)), so always read through a getter.
+const TABLES = {
+  tasks:{ get:()=>tasks, toRow:taskToRow },
+  notes:{ get:()=>notes, toRow:noteToRow }
+};
+const snap  = { tasks:new Map(), notes:new Map() };   // id -> JSON of what the DB currently holds
+const dirty = { tasks:false, notes:false };
+let currentUser=null, syncing=false, syncFailed=false, syncTimer=null, retryTimer=null, lastLoad=0;
+
+function setSync(state){
+  const el=document.getElementById('syncStatus'); if(!el) return;
+  const labels={loading:'Loading…',saving:'Saving…',saved:'Synced',error:'Sync failed, retrying…'};
+  el.textContent=labels[state]||'';
+  el.classList.toggle('error',state==='error');
+}
+
+function scheduleSync(delay=350){
+  if(!currentUser) return;
+  clearTimeout(syncTimer);
+  syncTimer=setTimeout(flush,delay);
+}
+
+// Diff the in-memory array against what the DB has, then upsert changed rows and delete removed ones.
+async function pushTable(name){
+  const {get,toRow}=TABLES[name], s=snap[name], cur=get(), seen=new Set(), ups=[];
+  for(const x of cur){
+    const id=String(x.id); seen.add(id);
+    const str=JSON.stringify(x);
+    if(s.get(id)!==str) ups.push({id,str,row:toRow(x)});
+  }
+  const dels=[...s.keys()].filter(id=>!seen.has(id));
+  if(ups.length){
+    const {error}=await sb.from(name).upsert(ups.map(u=>u.row));
+    if(error) throw error;
+    ups.forEach(u=>s.set(u.id,u.str));
+  }
+  if(dels.length){
+    const {error}=await sb.from(name).delete().in('id',dels);
+    if(error) throw error;
+    dels.forEach(id=>s.delete(id));
   }
 }
+
+async function flush(){
+  if(syncing||!currentUser) return;
+  syncing=true; setSync('saving');
+  try{
+    for(const name of ['tasks','notes']){
+      if(!dirty[name]) continue;
+      dirty[name]=false;
+      await pushTable(name);
+    }
+    syncFailed=false; setSync('saved');
+  }catch(e){
+    console.error('Sync failed',e);
+    syncing=false; syncFailed=true; dirty.tasks=dirty.notes=true; setSync('error');
+    clearTimeout(retryTimer); retryTimer=setTimeout(flush,8000);
+    return;
+  }
+  syncing=false;
+  if(dirty.tasks||dirty.notes) scheduleSync(0);
+}
+
+function save(){ dirty.tasks=true; scheduleSync(); }
+
+async function fetchAll(table){
+  const out=[], size=1000;
+  for(let from=0;;from+=size){
+    const {data,error}=await sb.from(table).select('*').order('created_at',{ascending:true}).order('id').range(from,from+size-1);
+    if(error) throw error;
+    out.push(...data);
+    if(data.length<size) break;
+  }
+  return out;
+}
+
+async function loadAll(){
+  setSync('loading');
+  const [t,n]=await Promise.all([fetchAll('tasks'),fetchAll('notes')]);
+  tasks=t.map(rowToTask); notes=n.map(rowToNote);
+  snap.tasks=new Map(tasks.map(x=>[String(x.id),JSON.stringify(x)]));
+  snap.notes=new Map(notes.map(x=>[String(x.id),JSON.stringify(x)]));
+  lastLoad=Date.now(); setSync('saved');
+}
+// ===== SUPABASE SYNC END =====
+
 function sunday(d){let x=new Date(d);let day=x.getDay();x.setDate(x.getDate()-day);x.setHours(0,0,0,0);return x}
 function addDays(d,n){let x=new Date(d);x.setDate(x.getDate()+n);return x}
 // Tasks always display earliest-time-first, regardless of the order they were entered in.
@@ -1176,13 +1336,11 @@ function loadNotes(){
   return [];
 }
 
-let notes = loadNotes();
+let notes = [];
 let editNoteId = null;
 let tempNoteChecklist = [];
 
-function saveNotes(){
-  safeSet(NOTES_KEY, JSON.stringify(notes));
-}
+function saveNotes(){ dirty.notes=true; scheduleSync(); }
 
 function fmtTimestamp(iso){
   if(!iso) return '';
@@ -1535,7 +1693,102 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-seed();renderAll();
+// ── AUTH + BOOT ──────────────────────────────────────────────
+function showAuth(){ document.getElementById('authOverlay').classList.add('show'); }
+function hideAuth(){ document.getElementById('authOverlay').classList.remove('show'); }
+function authMsg(text,ok){ const el=document.getElementById('authMsg'); el.textContent=text||''; el.classList.toggle('ok',!!ok); }
+function setAuthBusy(b){ document.getElementById('signInBtn').disabled=b; document.getElementById('signUpBtn').disabled=b; }
+
+async function authSubmit(mode){
+  const email=document.getElementById('authEmail').value.trim();
+  const password=document.getElementById('authPass').value;
+  if(!email || password.length<6){ authMsg('Enter your email and a password of at least 6 characters.'); return; }
+  authMsg(''); setAuthBusy(true);
+  try{
+    const res = mode==='signup'
+      ? await sb.auth.signUp({email,password})
+      : await sb.auth.signInWithPassword({email,password});
+    if(res.error) throw res.error;
+    if(res.data.session) await onSignedIn(res.data.session.user);
+    else authMsg('Account created. Check your email to confirm it, then sign in.',true);
+  }catch(e){
+    authMsg(e.message || 'Something went wrong. Please try again.');
+  }finally{ setAuthBusy(false); }
+}
+
+async function onSignedIn(user){
+  currentUser=user;
+  try{
+    await loadAll();
+  }catch(e){
+    console.error(e);
+    currentUser=null; setSync('');
+    authMsg('Could not load your data: '+(e.message||e)+' (did you run the SQL schema?)');
+    showAuth();
+    return;
+  }
+  importLocalData();
+  hideAuth(); authMsg('');
+  renderAll();
+}
+
+// One-time: offer to upload whatever the old localStorage version saved on this device.
+function importLocalData(){
+  const flag='plannerLocalImport_'+currentUser.id;
+  if(safeGet(flag)) return;
+  if(tasks.length || notes.length){ safeSet(flag,'1'); return; }
+  const lt=loadTasks()||[], ln=loadNotes()||[];
+  if(!lt.length && !ln.length) return;
+  safeSet(flag,'1');
+  if(!confirm(`Found ${lt.length} tasks and ${ln.length} notes saved on this device. Upload them to your account?`)) return;
+  const fix=x=>({...x,id:UUID_RE.test(String(x.id))?String(x.id):createId()});
+  tasks=lt.map(fix); notes=ln.map(fix);
+  save(); saveNotes();
+}
+
+async function logout(){
+  if(!currentUser) return;
+  clearTimeout(syncTimer);
+  syncing=false; await flush();
+  await sb.auth.signOut();
+}
+
+function resetLocalState(){
+  currentUser=null; tasks=[]; notes=[];
+  snap.tasks=new Map(); snap.notes=new Map();
+  dirty.tasks=dirty.notes=false; syncing=false; syncFailed=false;
+  clearTimeout(syncTimer); clearTimeout(retryTimer); setSync('');
+  renderAll();
+}
+
+async function boot(){
+  if(!SUPABASE_URL || !SUPABASE_ANON_KEY){
+    showAuth(); authMsg('Missing config. Set SUPABASE_URL and SUPABASE_ANON_KEY env vars and rebuild.');
+    return;
+  }
+  sb.auth.onAuthStateChange((evt)=>{
+    if(evt==='SIGNED_OUT'){ resetLocalState(); showAuth(); }
+  });
+  const {data:{session}}=await sb.auth.getSession();
+  if(session) await onSignedIn(session.user); else showAuth();
+}
+
+document.getElementById('authPass').addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); authSubmit('signin'); }});
+
+// Pull fresh data when the app comes back to the foreground; push pending changes when it goes to background.
+document.addEventListener('visibilitychange',()=>{
+  if(!currentUser) return;
+  if(document.visibilityState==='hidden'){
+    if(dirty.tasks||dirty.notes) scheduleSync(0);
+  }else if(!syncing && !syncFailed && !dirty.tasks && !dirty.notes && Date.now()-lastLoad>10000){
+    loadAll().then(()=>{ renderAll(); refreshDayModal(); }).catch(e=>console.warn('Refresh failed',e));
+  }
+});
+window.addEventListener('beforeunload',e=>{
+  if(dirty.tasks||dirty.notes||syncing){ e.preventDefault(); e.returnValue=''; }
+});
+
+renderAll(); boot();
 </script>
 
 <script>
